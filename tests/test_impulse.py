@@ -1,15 +1,15 @@
 """Tests for Engine 2: Stochastic Impulse."""
 
-from humanclaw.core.config import HumanClawConfig
-from humanclaw.core.store import Store
-from humanclaw.core.events import EventLog
-from humanclaw.core.models import ImpulseType
-from humanclaw.engines.human_state import HumanState
-from humanclaw.engines.impulse import StochasticImpulseEngine
+from humane.core.config import HumaneConfig
+from humane.core.store import Store
+from humane.core.events import EventLog
+from humane.core.models import ImpulseType
+from humane.engines.human_state import HumanState
+from humane.engines.impulse import StochasticImpulseEngine
 
 
 def _make_impulse(db_path="/tmp/test_impulse.db"):
-    config = HumanClawConfig()
+    config = HumaneConfig()
     store = Store(db_path)
     store.initialize()
     event_log = EventLog(store)

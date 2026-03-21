@@ -1,15 +1,15 @@
 """Tests for Engine 3: InactionGuard."""
 
-from humanclaw.core.config import HumanClawConfig
-from humanclaw.core.store import Store
-from humanclaw.core.events import EventLog
-from humanclaw.core.models import ProposedAction, Verdict
-from humanclaw.engines.human_state import HumanState
-from humanclaw.engines.inaction_guard import InactionGuard
+from humane.core.config import HumaneConfig
+from humane.core.store import Store
+from humane.core.events import EventLog
+from humane.core.models import ProposedAction, Verdict
+from humane.engines.human_state import HumanState
+from humane.engines.inaction_guard import InactionGuard
 
 
 def _make_guard(db_path="/tmp/test_ig.db"):
-    config = HumanClawConfig()
+    config = HumaneConfig()
     store = Store(db_path)
     store.initialize()
     event_log = EventLog(store)

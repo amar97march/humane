@@ -1,12 +1,12 @@
 """Tests for the Conductor — full gate stack integration."""
 
-from humanclaw.conductor import Conductor
-from humanclaw.core.models import ProposedAction, Verdict
+from humane.conductor import Conductor
+from humane.core.models import ProposedAction, Verdict
 
 
 def _make_conductor(db_path="/tmp/test_conductor.db"):
-    from humanclaw.core.config import HumanClawConfig
-    config = HumanClawConfig()
+    from humane.core.config import HumaneConfig
+    config = HumaneConfig()
     config.db_path = db_path
     return Conductor(config=config, db_path=db_path)
 

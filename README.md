@@ -1,10 +1,10 @@
-# HumanClaw
+# Humane
 
 **Human behavioral middleware for AI agents.**
 
-HumanClaw sits between any AI agent and the real world. It does not replace the LLM or the agent runtime — it wraps the agent's decision-making layer with 10 engines that simulate the one class of behaviors no current AI agent has: **human-like internal drives**.
+Humane sits between any AI agent and the real world. It does not replace the LLM or the agent runtime — it wraps the agent's decision-making layer with 10 engines that simulate the one class of behaviors no current AI agent has: **human-like internal drives**.
 
-Every AI agent today is a reactive state machine. It waits for a trigger. It responds. It stops. HumanClaw makes agents proactive — they act without being asked, protect their reputation before sending a message, notice when a conversation feels different, refuse things that conflict with their values, and reprioritize their day based on their mood.
+Every AI agent today is a reactive state machine. It waits for a trigger. It responds. It stops. Humane makes agents proactive — they act without being asked, protect their reputation before sending a message, notice when a conversation feels different, refuse things that conflict with their values, and reprioritize their day based on their mood.
 
 ## Key Features
 
@@ -98,21 +98,21 @@ pip install -e ".[dev]"
 Verify the installation:
 
 ```bash
-humanclaw --version
-# HumanClaw, version 1.0.0
+humane --version
+# Humane, version 1.0.0
 ```
 
 ### 2. Init
 
 ```bash
-humanclaw init
+humane init
 ```
 
 The init wizard asks 6 questions and writes a YAML config file:
 
 ```
 ══════════════════════════════════════════
-  HUMANCLAW    human behavioral middleware
+  HUMANE    human behavioral middleware
 ══════════════════════════════════════════
 
 Let's set up your first agent. 6 questions.
@@ -125,8 +125,8 @@ Let's set up your first agent. 6 questions.
 ? Start with preset values › business-safe
 
 ══════════════════════════════════════════
-✓  Config written     ~/.humanclaw/my-agent.yaml
-✓  Database created   ~/.humanclaw/my-agent.db
+✓  Config written     ~/.humane/my-agent.yaml
+✓  Database created   ~/.humane/my-agent.db
 ✓  Values loaded      business-safe preset
 ══════════════════════════════════════════
 ```
@@ -135,16 +135,16 @@ Let's set up your first agent. 6 questions.
 
 | File | Purpose |
 |---|---|
-| `~/.humanclaw/<agent>.yaml` | All configuration parameters, fully commented |
-| `~/.humanclaw/<agent>.db` | SQLite database for state, hold queue, entities, events |
-| `~/.humanclaw/.env` | API keys (never stored in config) |
+| `~/.humane/<agent>.yaml` | All configuration parameters, fully commented |
+| `~/.humane/<agent>.db` | SQLite database for state, hold queue, entities, events |
+| `~/.humane/.env` | API keys (never stored in config) |
 
-You can skip init entirely — HumanClaw creates defaults automatically when you first import it.
+You can skip init entirely — Humane creates defaults automatically when you first import it.
 
 ### 3. Demo
 
 ```bash
-humanclaw demo
+humane demo
 ```
 
 This is the most important command. It simulates 6 hours of idle time in 10 seconds, fires a live impulse, runs it through the full gate stack, and shows the result:
@@ -174,14 +174,14 @@ Evaluating through gate stack...
 
 ────────────────────────────────────────
 Your agent just noticed something you forgot about.
-Nobody asked it to. That's HumanClaw.
+Nobody asked it to. That's Humane.
 ────────────────────────────────────────
 ```
 
 ### 4. Dashboard
 
 ```bash
-humanclaw
+humane
 ```
 
 Opens the full terminal dashboard with live HumanState bars, the hold queue, event log, and all 10 engine statuses. Press `Ctrl+C` to exit.
@@ -189,7 +189,7 @@ Opens the full terminal dashboard with live HumanState bars, the hold queue, eve
 For a quick state check without the full TUI:
 
 ```bash
-humanclaw status
+humane status
 ```
 
 ```
@@ -228,7 +228,7 @@ python web_dashboard.py
 └───────────────────────────┬─────────────────────────────────────┘
                             │
 ┌───────────────────────────▼─────────────────────────────────────┐
-│                    HUMANCLAW LAYER                               │
+│                    HUMANE LAYER                               │
 │                                                                  │
 │  SENSING                                                         │
 │  ┌──────────────────────┐   ┌──────────────────────────────┐    │
@@ -258,7 +258,7 @@ python web_dashboard.py
 │  └──────────────────────────────────────────────────────────┘  │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                HumanClaw Conductor                        │  │
+│  │                Humane Conductor                        │  │
 │  │      orchestrates all engines, exposes single API        │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └───────────────────────────┬─────────────────────────────────────┘
@@ -300,14 +300,14 @@ Every action passes through this sequence. If any gate returns HOLD, the action 
 ### Directory Structure
 
 ```
-humanclaw/
+humane/
 ├── pyproject.toml                 # Package config, CLI entry, dependencies
 ├── presets/
 │   └── business_safe.yaml         # 7 value statements (3 hard, 4 soft)
 ├── web_dashboard.py               # Browser-based dashboard server
-├── humanclaw/
+├── humane/
 │   ├── __init__.py                # Public API: guard, Conductor
-│   ├── __main__.py                # python -m humanclaw
+│   ├── __main__.py                # python -m humane
 │   ├── conductor.py               # Orchestrates all 10 engines
 │   ├── guard.py                   # @guard decorator
 │   ├── sequencer.py               # Mood-Aware Task Sequencer
@@ -342,7 +342,7 @@ humanclaw/
 
 ### Database Schema
 
-HumanClaw uses SQLite with WAL mode for concurrent reads. All state persists across restarts.
+Humane uses SQLite with WAL mode for concurrent reads. All state persists across restarts.
 
 ```
 human_state          → Key-value store for engine state snapshots
@@ -361,10 +361,10 @@ interactions         → Per-entity interaction history
 
 ### The @guard Decorator
 
-The simplest way to integrate HumanClaw. One import, one decorator:
+The simplest way to integrate Humane. One import, one decorator:
 
 ```python
-from humanclaw import guard
+from humane import guard
 
 @guard(action_type="send_message", confidence=0.8)
 def send_followup(contact_id, message_body):
@@ -410,7 +410,7 @@ else:
 For full control, use the Conductor API:
 
 ```python
-from humanclaw import Conductor, ProposedAction
+from humane import Conductor, ProposedAction
 
 # Create a conductor (uses default config, or pass your own)
 conductor = Conductor()
@@ -465,7 +465,7 @@ if impulse_result:
 Every contact the agent interacts with builds a relational profile:
 
 ```python
-from humanclaw.core.models import EntityType
+from humane.core.models import EntityType
 
 # Register entities
 conductor.relational.add_entity("arjun", EntityType.PROSPECT)
@@ -547,7 +547,7 @@ conductor.goal_engine.abandon(goal.id)
 ### Memory System
 
 ```python
-from humanclaw.core.models import MemoryType
+from humane.core.models import MemoryType
 
 # Add memories
 mem = conductor.memory_decay.add_memory(
@@ -585,7 +585,7 @@ archived = conductor.memory_decay.recall_archived(mem.id)
 Values are the moral floor. Hard values block unconditionally — no override, no human approval path.
 
 ```python
-from humanclaw.core.models import ValueSeverity
+from humane.core.models import ValueSeverity
 
 # Add a hard value (unconditional block)
 conductor.values.add_value(
@@ -636,7 +636,7 @@ for v in conductor.values.get_values():
 The Stochastic Impulse Engine fires unsolicited actions at random intervals using a non-homogeneous Poisson process — the rate changes based on HumanState.
 
 ```python
-from humanclaw.core.models import ImpulseType
+from humane.core.models import ImpulseType
 
 # Force-fire an impulse (for testing)
 event = conductor.impulse_engine.force_fire(ImpulseType.IDLE_DISCOVERY)
@@ -660,7 +660,7 @@ event = conductor.impulse_engine.force_fire(ImpulseType.IDLE_DISCOVERY)
 
 ## Configuration Reference
 
-All parameters live in `~/.humanclaw/<agent>.yaml`. Every value has a default.
+All parameters live in `~/.humane/<agent>.yaml`. Every value has a default.
 
 | Parameter | Default | Engine | Description |
 |---|---|---|---|
@@ -679,10 +679,10 @@ All parameters live in `~/.humanclaw/<agent>.yaml`. Every value has a default.
 | `social_risk_flag_threshold` | `0.35` | Social Risk | Above this, action is flagged |
 | `anomaly_hard_threshold` | `0.60` | Anomaly | Above this, action held for review |
 | `anomaly_soft_threshold` | `0.30` | Anomaly | Above this, context note injected |
-| `agent_name` | `"humanclaw-agent"` | System | Used in dashboard and logs |
+| `agent_name` | `"humane-agent"` | System | Used in dashboard and logs |
 | `llm_provider` | `"anthropic"` | System | LLM provider for enhanced evaluation |
 | `notification_channel` | `"none"` | System | Notification target |
-| `db_path` | `"~/.humanclaw/agent.db"` | System | SQLite database path |
+| `db_path` | `"~/.humane/agent.db"` | System | SQLite database path |
 | `values_preset` | `"business-safe"` | Values | Values preset to load on init |
 
 **Tuning profiles:**
@@ -697,7 +697,7 @@ Edit the config directly or use the CLI:
 
 ```bash
 # View current config
-cat ~/.humanclaw/my-agent.yaml
+cat ~/.humane/my-agent.yaml
 
 # Edit any parameter
 # Changes apply without restart when using the dashboard
@@ -709,14 +709,14 @@ cat ~/.humanclaw/my-agent.yaml
 
 | Command | Description |
 |---|---|
-| `humanclaw` | Open the full TUI dashboard |
-| `humanclaw --version` | Print version |
-| `humanclaw init` | Run the setup wizard |
-| `humanclaw demo` | Run the live demo (the hook) |
-| `humanclaw status` | Show current HumanState and hold queue count |
-| `humanclaw queue approve <id>` | Approve a held action |
-| `humanclaw queue reject <id>` | Reject a held action |
-| `humanclaw quickstart` | Print a working integration example |
+| `humane` | Open the full TUI dashboard |
+| `humane --version` | Print version |
+| `humane init` | Run the setup wizard |
+| `humane demo` | Run the live demo (the hook) |
+| `humane status` | Show current HumanState and hold queue count |
+| `humane queue approve <id>` | Approve a held action |
+| `humane queue reject <id>` | Reject a held action |
+| `humane quickstart` | Print a working integration example |
 
 ---
 
@@ -749,12 +749,12 @@ python3 -m pytest tests/ -v -k "hold"
 ### Writing Tests
 
 ```python
-from humanclaw.conductor import Conductor
-from humanclaw.core.config import HumanClawConfig
-from humanclaw.core.models import ProposedAction, Verdict
+from humane.conductor import Conductor
+from humane.core.config import HumaneConfig
+from humane.core.models import ProposedAction, Verdict
 
 def test_social_risk_blocks_aggressive_action():
-    config = HumanClawConfig()
+    config = HumaneConfig()
     config.db_path = "/tmp/test_social_risk.db"
     conductor = Conductor(config=config, db_path=config.db_path)
 
@@ -907,7 +907,7 @@ Runs in **learning mode** for the first 5 interactions per entity — accumulate
 
 ### Engine 10: Values Boundary
 
-The only unconditional block in HumanClaw.
+The only unconditional block in Humane.
 
 - **Hard values** → BLOCKED. No human approval path. No override. The action does not execute.
 - **Soft values** → HOLD with values-conflict tag. Human review required.
@@ -918,7 +918,7 @@ Values are scored by keyword alignment against configured violation and honoring
 
 ## Troubleshooting
 
-### "No module named humanclaw"
+### "No module named humane"
 
 You need to install the package first:
 
@@ -926,25 +926,25 @@ You need to install the package first:
 pip install -e .
 ```
 
-Make sure you're using the same Python that has HumanClaw installed. Check with:
+Make sure you're using the same Python that has Humane installed. Check with:
 
 ```bash
-which humanclaw
-python3 -c "import humanclaw; print(humanclaw.__version__)"
+which humane
+python3 -c "import humane; print(humane.__version__)"
 ```
 
 ### Config file not found
 
-If you skipped `humanclaw init`, HumanClaw creates defaults automatically. To create a config manually:
+If you skipped `humane init`, Humane creates defaults automatically. To create a config manually:
 
 ```bash
-humanclaw init
+humane init
 ```
 
-Or use HumanClaw programmatically without init — the Conductor creates a default config and in-memory database:
+Or use Humane programmatically without init — the Conductor creates a default config and in-memory database:
 
 ```python
-from humanclaw import Conductor
+from humane import Conductor
 conductor = Conductor()  # Works without any config file
 ```
 
@@ -953,7 +953,7 @@ conductor = Conductor()  # Works without any config file
 Your confidence threshold may be too high, or the agent's state is degraded:
 
 ```bash
-humanclaw status
+humane status
 ```
 
 Check the `DQ_MULT` value. If it's low (< 0.5), the agent is fatigued or low-energy. The adjusted confidence = `raw_confidence × DQ_MULT`. Lower the threshold or wait for state recovery:
@@ -978,7 +978,7 @@ Check these conditions:
 Force-fire for testing:
 
 ```python
-from humanclaw.core.models import ImpulseType
+from humane.core.models import ImpulseType
 event = conductor.impulse_engine.force_fire(ImpulseType.IDLE_DISCOVERY)
 ```
 
@@ -991,7 +991,7 @@ SQLite uses WAL mode for concurrent reads, but only one writer at a time. If you
 ```bash
 # Check the server is running
 python web_dashboard.py
-# Should print: HumanClaw dashboard: http://localhost:8765
+# Should print: Humane dashboard: http://localhost:8765
 
 # Check port isn't in use
 lsof -i :8765

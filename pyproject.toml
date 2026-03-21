@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "humanclaw"
+name = "humane"
 version = "1.0.0"
 description = "Human behavioral middleware for AI agents"
 requires-python = ">=3.9"
@@ -12,18 +12,28 @@ dependencies = [
     "click>=8.0",
     "rich>=13.0",
     "pyyaml>=6.0",
+    "aiohttp>=3.9",
 ]
 
 [project.optional-dependencies]
-llm = ["anthropic>=0.20", "openai>=1.0"]
-dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+anthropic = ["anthropic>=0.20"]
+openai = ["openai>=1.0"]
+gemini = ["google-genai>=1.0"]
+bot = ["python-telegram-bot>=21.0"]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21", "aiohttp>=3.9"]
+all = [
+    "python-telegram-bot>=21.0",
+    "anthropic>=0.20",
+    "openai>=1.0",
+    "google-genai>=1.0",
+]
 
 [project.scripts]
-humanclaw = "humanclaw.cli.main:cli"
+humane = "humane.cli.main:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["humanclaw*"]
+include = ["humane*"]
 
 [tool.setuptools.package-data]
-humanclaw = ["../presets/*.yaml"]
+humane = ["../presets/*.yaml"]

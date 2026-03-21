@@ -1,14 +1,14 @@
-"""HumanClaw Web Dashboard — lightweight HTTP server for browser preview."""
+"""Humane Web Dashboard — lightweight HTTP server for browser preview."""
 
 import json
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from humanclaw.conductor import Conductor
-from humanclaw.core.config import HumanClawConfig
-from humanclaw.core.models import ProposedAction, EntityType, ImpulseType, MemoryType, Verdict
+from humane.conductor import Conductor
+from humane.core.config import HumaneConfig
+from humane.core.models import ProposedAction, EntityType, ImpulseType, MemoryType, Verdict
 
-config = HumanClawConfig()
-config.db_path = "/tmp/humanclaw_web_demo.db"
+config = HumaneConfig()
+config.db_path = "/tmp/humane_web_demo.db"
 conductor = Conductor(config=config, db_path=config.db_path)
 
 # Seed demo data
@@ -28,7 +28,7 @@ HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HUMANCLAW</title>
+<title>HUMANE</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap');
 
@@ -392,12 +392,12 @@ HTML = r"""<!DOCTYPE html>
 <div class="header">
   <div class="header-left">
     <div>
-      <div class="logo">HUMANCLAW</div>
+      <div class="logo">HUMANE</div>
       <div class="logo-sub">human behavioral middleware</div>
     </div>
   </div>
   <div class="header-right">
-    <span style="color:var(--text-dim)">agent: <span style="color:var(--text)">humanclaw-agent</span></span>
+    <span style="color:var(--text-dim)">agent: <span style="color:var(--text)">humane-agent</span></span>
     <span><span class="status-dot"></span> <span style="color:var(--text-dim); font-size:11px">10 engines active</span></span>
     <span id="clock" style="color:var(--text-muted)"></span>
   </div>
@@ -710,5 +710,5 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     server = HTTPServer(('0.0.0.0', 8765), Handler)
-    print("HumanClaw dashboard: http://localhost:8765")
+    print("Humane dashboard: http://localhost:8765")
     server.serve_forever()

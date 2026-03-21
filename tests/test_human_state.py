@@ -1,15 +1,15 @@
 """Tests for Engine 1: HumanState."""
 
 import time
-from humanclaw.core.config import HumanClawConfig
-from humanclaw.core.store import Store
-from humanclaw.core.events import EventLog
-from humanclaw.engines.human_state import HumanState
-from humanclaw.core.models import TaskType
+from humane.core.config import HumaneConfig
+from humane.core.store import Store
+from humane.core.events import EventLog
+from humane.engines.human_state import HumanState
+from humane.core.models import TaskType
 
 
-def _make_state(db_path="/tmp/test_humanclaw_state.db"):
-    config = HumanClawConfig()
+def _make_state(db_path="/tmp/test_humane_state.db"):
+    config = HumaneConfig()
     store = Store(db_path)
     store.initialize()
     event_log = EventLog(store)
