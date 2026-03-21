@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "humanclaw"
+version = "1.0.0"
+description = "Human behavioral middleware for AI agents"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+dependencies = [
+    "click>=8.0",
+    "rich>=13.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.20", "openai>=1.0"]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+
+[project.scripts]
+humanclaw = "humanclaw.cli.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["humanclaw*"]
+
+[tool.setuptools.package-data]
+humanclaw = ["../presets/*.yaml"]
