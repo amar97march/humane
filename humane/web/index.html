@@ -3,39 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HumanClaw Control Panel</title>
+<title>Humane Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0a0a;--bg-card:#111111;--bg-card-hover:#161616;--bg-input:#0d0d0d;
-  --amber:#d4a017;--amber-dim:#8b6914;--amber-glow:rgba(212,160,23,0.15);
-  --green:#2ecc40;--red:#e74c3c;--blue:#3498db;--purple:#9b59b6;--cyan:#1abc9c;
-  --text:#e0e0e0;--text-dim:#777;--text-muted:#555;
-  --border:#222;--border-focus:#d4a017;
-  --font-mono:'JetBrains Mono',monospace;--font-sans:'Space Grotesk',sans-serif;
-  --radius:4px;
+  --bg:#F8FAFC;--bg-card:#FFFFFF;--bg-card-hover:#F1F5F9;--bg-input:#FFFFFF;
+  --amber:#3B82F6;--amber-dim:#2563EB;--amber-glow:rgba(59,130,246,0.06);
+  --green:#10B981;--red:#EF4444;--blue:#3B82F6;--purple:#8B5CF6;--cyan:#06B6D4;
+  --text:#0F172A;--text-dim:#475569;--text-muted:#94A3B8;
+  --border:#E2E8F0;--border-focus:#3B82F6;
+  --font-display:'Outfit',system-ui,sans-serif;
+  --font-sans:'DM Sans',system-ui,sans-serif;
+  --font-mono:'DM Sans',system-ui,sans-serif;
+  --radius:10px;
+  --shadow-card:0 1px 3px rgba(15,23,42,0.04),0 1px 2px rgba(15,23,42,0.06);
+  --shadow-card-hover:0 4px 12px rgba(15,23,42,0.08),0 2px 4px rgba(15,23,42,0.04);
+  --shadow-header:0 1px 3px rgba(15,23,42,0.06);
 }
 html{font-size:14px}
-body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-height:100vh;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.5}
 a{color:var(--amber);text-decoration:none}
 a:hover{text-decoration:underline}
-::selection{background:var(--amber);color:var(--bg)}
+::selection{background:var(--amber);color:#fff}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--text-dim)}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#94A3B8}
 
 /* HEADER */
 .header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:12px 24px;border-bottom:1px solid var(--border);background:#080808;
-  position:sticky;top:0;z-index:100;
+  padding:14px 28px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;box-shadow:var(--shadow-header);
 }
 .header-brand{display:flex;align-items:center;gap:10px}
-.header-brand h1{font-family:var(--font-sans);font-size:1.1rem;font-weight:700;letter-spacing:1px;color:var(--amber)}
+.header-brand h1{font-family:var(--font-display);font-size:1.2rem;font-weight:700;letter-spacing:1.5px;color:var(--amber)}
 .header-brand .tag{
   font-size:.65rem;padding:2px 6px;border:1px solid var(--amber-dim);color:var(--amber-dim);
   border-radius:2px;text-transform:uppercase;letter-spacing:1px;
@@ -43,36 +49,37 @@ a:hover{text-decoration:underline}
 .header-status{display:flex;align-items:center;gap:16px;font-size:.75rem;color:var(--text-dim)}
 .header-status .dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px}
 .dqm-badge{
-  font-weight:600;padding:3px 8px;border:1px solid var(--amber-dim);border-radius:2px;color:var(--amber);
+  font-family:var(--font-display);font-weight:700;padding:4px 10px;background:var(--amber-glow);border-radius:6px;color:var(--amber);font-size:.85rem;
 }
 
 /* TABS */
 .tab-bar{
-  display:flex;gap:0;border-bottom:1px solid var(--border);background:#080808;
-  position:sticky;top:47px;z-index:99;overflow-x:auto;
+  display:flex;gap:4px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  position:sticky;top:49px;z-index:99;overflow-x:auto;padding:6px 24px;
 }
 .tab-bar button{
-  background:none;border:none;color:var(--text-dim);padding:10px 20px;
-  font-family:var(--font-mono);font-size:.78rem;cursor:pointer;
-  border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;
+  background:none;border:none;color:var(--text-dim);padding:8px 16px;
+  font-family:var(--font-sans);font-size:.8rem;font-weight:500;cursor:pointer;
+  border-radius:8px;transition:all .2s;white-space:nowrap;
 }
-.tab-bar button:hover{color:var(--text);background:var(--amber-glow)}
-.tab-bar button.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab-bar button:hover{color:var(--text);background:var(--bg-card-hover)}
+.tab-bar button.active{color:#fff;background:var(--amber);box-shadow:0 2px 8px rgba(59,130,246,0.25)}
 
 /* CONTENT */
-.content{padding:20px 24px;max-width:1400px;margin:0 auto}
+.content{padding:24px 32px;max-width:1400px;margin:0 auto}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
 /* CARDS */
 .card{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:16px;margin-bottom:16px;
+  padding:20px;margin-bottom:16px;box-shadow:var(--shadow-card);transition:all .2s ease;
 }
-.card:hover{border-color:#333}
+.card:hover{border-color:#CBD5E1;box-shadow:var(--shadow-card-hover);transform:translateY(-1px)}
 .card-title{
-  font-family:var(--font-sans);font-size:.85rem;font-weight:600;color:var(--amber);
-  margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;
+  font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--text);
+  margin-bottom:14px;letter-spacing:.3px;
 }
 .card-subtitle{font-size:.7rem;color:var(--text-dim);margin-bottom:8px}
 
@@ -82,42 +89,42 @@ a:hover{text-decoration:underline}
 @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
 
 /* STATE BARS */
-.state-bar{margin-bottom:10px}
-.state-bar-label{display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:3px}
-.state-bar-label span:first-child{color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px}
-.state-bar-label span:last-child{font-weight:600}
-.state-bar-track{height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden}
-.state-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
-.state-bar-fill.energy{background:var(--green)}
-.state-bar-fill.mood-pos{background:var(--amber)}
-.state-bar-fill.mood-neg{background:var(--red)}
-.state-bar-fill.fatigue{background:var(--red)}
-.state-bar-fill.boredom{background:var(--purple)}
-.state-bar-fill.social_load{background:var(--blue)}
-.state-bar-fill.focus{background:var(--cyan)}
+.state-bar{margin-bottom:14px}
+.state-bar-label{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px;align-items:baseline}
+.state-bar-label span:first-child{color:var(--text-dim);font-weight:500;letter-spacing:.3px}
+.state-bar-label span:last-child{font-weight:700;font-family:var(--font-display);font-size:.85rem}
+.state-bar-track{height:8px;background:#F1F5F9;border-radius:6px;overflow:hidden}
+.state-bar-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.state-bar-fill.energy{background:linear-gradient(90deg,#34D399,#10B981)}
+.state-bar-fill.mood-pos{background:linear-gradient(90deg,#60A5FA,var(--amber))}
+.state-bar-fill.mood-neg{background:linear-gradient(90deg,#FCA5A5,var(--red))}
+.state-bar-fill.fatigue{background:linear-gradient(90deg,#FCA5A5,var(--red))}
+.state-bar-fill.boredom{background:linear-gradient(90deg,#A78BFA,var(--purple))}
+.state-bar-fill.social_load{background:linear-gradient(90deg,#93C5FD,var(--blue))}
+.state-bar-fill.focus{background:linear-gradient(90deg,#67E8F9,var(--cyan))}
 
 /* TABLES */
-.data-table{width:100%;border-collapse:collapse;font-size:.75rem}
+.data-table{width:100%;border-collapse:collapse;font-size:.8rem}
 .data-table th{
-  text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);
-  color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;font-size:.65rem;font-weight:600;
+  text-align:left;padding:10px 14px;border-bottom:2px solid var(--border);
+  color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-size:.68rem;font-weight:600;
 }
-.data-table td{padding:8px 10px;border-bottom:1px solid #191919;vertical-align:top}
+.data-table td{padding:12px 14px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
 .data-table tr:hover td{background:var(--bg-card-hover)}
 .data-table .mono{font-family:var(--font-mono)}
 
 /* BADGES */
 .badge{
-  display:inline-block;padding:2px 7px;border-radius:2px;font-size:.65rem;
-  font-weight:600;text-transform:uppercase;letter-spacing:.3px;
+  display:inline-block;padding:3px 10px;border-radius:20px;font-size:.68rem;
+  font-weight:600;letter-spacing:.2px;
 }
 .badge-proceed{background:rgba(46,204,64,.15);color:var(--green);border:1px solid rgba(46,204,64,.3)}
 .badge-hold{background:rgba(231,76,60,.15);color:var(--red);border:1px solid rgba(231,76,60,.3)}
-.badge-defer{background:rgba(212,160,23,.15);color:var(--amber);border:1px solid rgba(212,160,23,.3)}
+.badge-defer{background:rgba(37,99,235,.1);color:var(--amber);border:1px solid rgba(37,99,235,.2)}
 .badge-hard{background:rgba(231,76,60,.15);color:var(--red);border:1px solid rgba(231,76,60,.3)}
 .badge-soft{background:rgba(52,152,219,.15);color:var(--blue);border:1px solid rgba(52,152,219,.3)}
 .badge-active{background:rgba(46,204,64,.15);color:var(--green);border:1px solid rgba(46,204,64,.3)}
-.badge-paused{background:rgba(212,160,23,.15);color:var(--amber);border:1px solid rgba(212,160,23,.3)}
+.badge-paused{background:rgba(37,99,235,.1);color:var(--amber);border:1px solid rgba(37,99,235,.2)}
 .badge-abandoned{background:rgba(119,119,119,.15);color:var(--text-dim);border:1px solid rgba(119,119,119,.3)}
 .badge-completed{background:rgba(26,188,156,.15);color:var(--cyan);border:1px solid rgba(26,188,156,.3)}
 
@@ -129,30 +136,31 @@ a:hover{text-decoration:underline}
 
 /* BUTTONS */
 .btn{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:5px 12px;border:1px solid var(--border);border-radius:var(--radius);
-  background:var(--bg-card);color:var(--text);font-family:var(--font-mono);
-  font-size:.72rem;cursor:pointer;transition:all .15s;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border:1px solid var(--border);border-radius:8px;
+  background:var(--bg-card);color:var(--text);font-family:var(--font-sans);
+  font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s;
 }
-.btn:hover{border-color:var(--amber);color:var(--amber)}
-.btn-amber{border-color:var(--amber-dim);color:var(--amber)}
-.btn-amber:hover{background:var(--amber-glow);border-color:var(--amber)}
-.btn-green{border-color:rgba(46,204,64,.4);color:var(--green)}
-.btn-green:hover{background:rgba(46,204,64,.1)}
-.btn-red{border-color:rgba(231,76,60,.4);color:var(--red)}
-.btn-red:hover{background:rgba(231,76,60,.1)}
-.btn-sm{padding:3px 8px;font-size:.65rem}
+.btn:hover{border-color:var(--amber);color:var(--amber);box-shadow:0 2px 6px rgba(59,130,246,0.1)}
+.btn-amber{border-color:var(--amber);color:#fff;background:var(--amber)}
+.btn-amber:hover{background:var(--amber-dim);box-shadow:0 4px 12px rgba(59,130,246,0.25)}
+.btn-green{border-color:var(--green);color:#fff;background:var(--green)}
+.btn-green:hover{background:#059669;box-shadow:0 4px 12px rgba(16,185,129,0.25)}
+.btn-red{border-color:transparent;color:var(--red);background:rgba(239,68,68,0.08)}
+.btn-red:hover{background:rgba(239,68,68,0.15)}
+.btn-sm{padding:5px 10px;font-size:.72rem}
 .btn-group{display:flex;gap:6px;flex-wrap:wrap}
 
 /* FORMS */
 .form-row{margin-bottom:10px}
 .form-row label{display:block;font-size:.68rem;color:var(--text-dim);margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
 .form-row input,.form-row select,.form-row textarea{
-  width:100%;padding:7px 10px;background:var(--bg-input);border:1px solid var(--border);
-  border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:.78rem;
+  width:100%;padding:10px 14px;background:var(--bg-input);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--font-sans);font-size:.85rem;
+  transition:border-color .2s,box-shadow .2s;
 }
 .form-row input:focus,.form-row select:focus,.form-row textarea:focus{
-  outline:none;border-color:var(--border-focus);box-shadow:0 0 0 1px var(--amber-glow);
+  outline:none;border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(59,130,246,0.12);
 }
 .form-row textarea{resize:vertical;min-height:60px}
 .form-row select{cursor:pointer}
@@ -161,7 +169,7 @@ a:hover{text-decoration:underline}
 .form-inline .form-row{flex:1}
 
 /* EVALUATE PANEL */
-.eval-result{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:#0d0d0d}
+.eval-result{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:#F0F4F8}
 .eval-result .verdict-big{
   font-family:var(--font-sans);font-size:1.2rem;font-weight:700;margin-bottom:8px;
 }
@@ -203,13 +211,55 @@ a:hover{text-decoration:underline}
 /* SECTION HEADER */
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .section-title{font-family:var(--font-sans);font-size:.95rem;font-weight:600;color:var(--text)}
+
+/* API SECURITY */
+.api-toggle{position:relative;display:inline-block;width:44px;height:24px;cursor:pointer}
+.api-toggle input{opacity:0;width:0;height:0}
+.api-toggle .track{position:absolute;top:0;left:0;right:0;bottom:0;border-radius:24px;transition:background .2s}
+.api-toggle .thumb{position:absolute;top:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.api-key-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.75rem}
+.api-key-mono{font-family:var(--font-mono);font-weight:600;color:var(--amber)}
+.api-key-meta{color:var(--text-muted);margin-left:12px}
+.btn-revoke{background:transparent;border:1px solid var(--red);color:var(--red);padding:3px 10px;border-radius:var(--radius);cursor:pointer;font-size:.7rem}
+.btn-revoke:hover{background:var(--red);color:#fff}
+
+/* Dashboard Customization */
+.customize-mode .widget-wrapper{border:2px dashed var(--border);border-radius:var(--radius);position:relative;cursor:grab;transition:border-color .2s,background .2s}
+.customize-mode .widget-wrapper:active{cursor:grabbing}
+.customize-mode .widget-wrapper.drag-over{border-color:var(--amber);background:var(--amber-glow)}
+.widget-controls{display:none;position:absolute;top:8px;right:8px;z-index:10;gap:4px}
+.customize-mode .widget-controls{display:flex}
+.widget-handle{cursor:grab;color:var(--text-muted);font-size:16px;padding:4px;user-select:none}
+.widget-toggle{cursor:pointer;color:var(--text-muted);font-size:14px;padding:4px;border:none;background:none;font-family:var(--font-mono)}
+.widget-toggle:hover{color:var(--text)}
+.widget-wrapper.hidden-widget{opacity:0.4}
+.widget-wrapper{position:relative;margin-bottom:16px}
+.customize-bar{display:flex;gap:8px;margin-bottom:16px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--amber-dim);border-radius:var(--radius);align-items:center}
+.customize-bar .customize-label{font-size:.75rem;font-weight:600;color:var(--amber);margin-right:auto;font-family:var(--font-mono)}
+
+/* Page Help Banner */
+.page-help{
+  background:linear-gradient(135deg,rgba(59,130,246,0.04),rgba(59,130,246,0.08));
+  border:1px solid rgba(59,130,246,0.15);border-left:3px solid var(--amber);
+  border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;
+}
+.page-help-title{font-family:var(--font-display);font-size:.85rem;font-weight:600;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.page-help-title .help-icon{font-size:1rem}
+.page-help-desc{font-size:.82rem;color:var(--text-dim);line-height:1.6;margin-bottom:0}
+.page-help details{margin-top:10px}
+.page-help summary{font-size:.78rem;font-weight:600;color:var(--amber);cursor:pointer;user-select:none}
+.page-help summary:hover{color:var(--amber-dim)}
+.page-help-tips{margin-top:8px;padding-left:0;list-style:none}
+.page-help-tips li{font-size:.78rem;color:var(--text-dim);line-height:1.6;margin-bottom:6px;padding-left:16px;position:relative}
+.page-help-tips li::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--amber)}
+.page-help-tips b{color:var(--text);font-weight:600}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-brand">
-    <h1>HUMANCLAW</h1>
+    <h1>HUMANE</h1>
     <span class="tag">Control Panel</span>
   </div>
   <div class="header-status">
@@ -226,17 +276,58 @@ a:hover{text-decoration:underline}
   <button data-tab="memories">Memories</button>
   <button data-tab="values">Values</button>
   <button data-tab="config">Config</button>
+  <button data-tab="agents">Agents</button>
+  <button data-tab="simulate">Simulate</button>
+  <button data-tab="abtests">A/B Tests</button>
 </div>
 
 <div class="content">
 
 <!-- ===== DASHBOARD TAB ===== -->
 <div class="tab-panel active" id="panel-dashboard">
-  <div class="grid-2">
-    <div>
+  <div class="page-help">
+    <div class="page-help-title"><span class="help-icon">&#9673;</span> Overview</div>
+    <p class="page-help-desc">Your agent's live state at a glance. The six dimensions (energy, mood, fatigue, boredom, social load, focus) drive every decision the agent makes.</p>
+    <details>
+      <summary>How to use this page</summary>
+      <ul class="page-help-tips">
+        <li><b>DQM Score</b> — Decision Quality Multiplier. Scales every action's confidence. Low DQM = more actions held for review.</li>
+        <li><b>Evaluate Action</b> — Test how the 10-engine gate stack judges any action. Enter a type, confidence, and rationale to see the verdict.</li>
+        <li><b>Fire Impulse</b> — Manually trigger a proactive impulse. Normally these fire automatically at random intervals.</li>
+        <li><b>Customize</b> — Drag-and-drop widgets to reorder, or hide sections you don't need.</li>
+      </ul>
+    </details>
+    <details style="margin-top:6px">
+      <summary>Example scenario</summary>
+      <ul class="page-help-tips">
+        <li>You notice <b>DQM is 0.62</b> (low). Check the state bars — <b>Fatigue is 0.85</b>. That's why. The agent is "tired" and deferring risky actions.</li>
+        <li>Click <b>Evaluate Action</b> → type "send_proposal", confidence 0.7, rationale "Client requested it". You see the verdict is <b>HOLD</b> because fatigue pushed adjusted confidence below threshold.</li>
+        <li>You know this is urgent, so go to the <b>Hold Queue</b> and approve it manually. Or lower the <b>Fatigue Defer Threshold</b> in Settings.</li>
+      </ul>
+    </details>
+  </div>
+  <div class="section-header">
+    <span class="section-title">Dashboard</span>
+    <div class="btn-group">
+      <button class="btn btn-amber" id="btn-customize" onclick="toggleCustomizeMode()">&#9881; Customize</button>
+    </div>
+  </div>
+  <div id="customize-bar-container"></div>
+  <div id="widgets-container">
+    <div class="widget-wrapper" data-widget-id="status_banner">
+      <div class="widget-controls">
+        <span class="widget-handle" title="Drag to reorder">&#9776;</span>
+        <button class="widget-toggle" title="Toggle visibility" onclick="toggleWidgetVisibility('status_banner')">&#128065;</button>
+      </div>
       <div class="card">
         <div class="card-title">Human State</div>
         <div id="state-bars"></div>
+      </div>
+    </div>
+    <div class="widget-wrapper" data-widget-id="state_bars">
+      <div class="widget-controls">
+        <span class="widget-handle" title="Drag to reorder">&#9776;</span>
+        <button class="widget-toggle" title="Toggle visibility" onclick="toggleWidgetVisibility('state_bars')">&#128065;</button>
       </div>
       <div class="card">
         <div class="card-title">Evaluate Action</div>
@@ -250,16 +341,32 @@ a:hover{text-decoration:underline}
         <div style="margin-top:8px"><button class="btn btn-amber" onclick="doEvaluate()">Evaluate</button></div>
         <div id="eval-result"></div>
       </div>
+    </div>
+    <div class="widget-wrapper" data-widget-id="recent_activity">
+      <div class="widget-controls">
+        <span class="widget-handle" title="Drag to reorder">&#9776;</span>
+        <button class="widget-toggle" title="Toggle visibility" onclick="toggleWidgetVisibility('recent_activity')">&#128065;</button>
+      </div>
       <div class="card">
         <div class="card-title">Fire Impulse</div>
         <div class="impulse-grid" id="impulse-btns"></div>
         <div id="impulse-result" style="margin-top:8px"></div>
       </div>
     </div>
-    <div>
+    <div class="widget-wrapper" data-widget-id="hold_queue_preview">
+      <div class="widget-controls">
+        <span class="widget-handle" title="Drag to reorder">&#9776;</span>
+        <button class="widget-toggle" title="Toggle visibility" onclick="toggleWidgetVisibility('hold_queue_preview')">&#128065;</button>
+      </div>
       <div class="card">
         <div class="card-title">Hold Queue <span id="queue-count" style="color:var(--text-dim);font-size:.7rem"></span></div>
         <div id="queue-list"></div>
+      </div>
+    </div>
+    <div class="widget-wrapper" data-widget-id="insights_card">
+      <div class="widget-controls">
+        <span class="widget-handle" title="Drag to reorder">&#9776;</span>
+        <button class="widget-toggle" title="Toggle visibility" onclick="toggleWidgetVisibility('insights_card')">&#128065;</button>
       </div>
       <div class="card">
         <div class="card-title">Recent Events</div>
@@ -271,6 +378,28 @@ a:hover{text-decoration:underline}
 
 <!-- ===== ENTITIES TAB ===== -->
 <div class="tab-panel" id="panel-entities">
+  <div class="page-help">
+    <div class="page-help-title"><span class="help-icon">&#9830;</span> Entities</div>
+    <p class="page-help-desc">Every person or contact builds a relational profile. Trust, grudges, and sentiment shape how the agent communicates with each entity.</p>
+    <details>
+      <summary>How to use this page</summary>
+      <ul class="page-help-tips">
+        <li><b>Trust Level</b> — Derived from sentiment + grudge history. Ranges from Untrusted (human approval required) to Deep Trust (agent shares freely).</li>
+        <li><b>Sentiment</b> — Weighted average of interaction quality. Decays over time — prospects decay fast (14 days), close colleagues slowly (60 days).</li>
+        <li><b>Grudge</b> — Accumulated negative experiences. Decays at half the rate of positive sentiment — grudges linger, just like with humans.</li>
+        <li><b>Health</b> — Overall relationship: Strong, Stable, Fragile, Strained, or Broken. Strained relationships trigger higher social risk.</li>
+      </ul>
+    </details>
+    <details style="margin-top:6px">
+      <summary>Example scenario</summary>
+      <ul class="page-help-tips">
+        <li>You add a new client: click <b>+ Add Entity</b> → name "Arjun", type "prospect". He starts with <b>neutral</b> trust and <b>stable</b> health.</li>
+        <li>After a positive call, the Telegram bot logs the interaction with sentiment +0.7. Arjun's trust starts moving toward <b>trusted</b>.</li>
+        <li>Two weeks later with no follow-up, sentiment decays (prospects decay in 14 days). The agent notices and sends you a reminder: "Haven't spoken to Arjun in 14 days."</li>
+        <li>If Arjun ghosts you, grudge builds up. The agent increases <b>social risk</b> on outgoing messages to Arjun — protecting you from seeming desperate.</li>
+      </ul>
+    </details>
+  </div>
   <div class="section-header">
     <span class="section-title">Relational Entity Memory</span>
     <button class="btn btn-amber" onclick="toggleForm('entity-form')">+ Add Entity</button>
@@ -304,6 +433,28 @@ a:hover{text-decoration:underline}
 
 <!-- ===== GOALS TAB ===== -->
 <div class="tab-panel" id="panel-goals">
+  <div class="page-help">
+    <div class="page-help-title"><span class="help-icon">&#9873;</span> Goals</div>
+    <p class="page-help-desc">Active objectives the agent tracks. Each goal has an ROI score — when it drops too low, the agent proposes abandonment. You always make the final call.</p>
+    <details>
+      <summary>How to use this page</summary>
+      <ul class="page-help-tips">
+        <li><b>ROI</b> — Return on Investment = velocity &times; relevance &times; (expected value / remaining effort). Green = healthy, amber = slowing, red = consider dropping.</li>
+        <li><b>Pause</b> — Temporarily suspend a goal. It won't trigger abandonment proposals while paused.</li>
+        <li><b>Abandon</b> — Mark as no longer worth pursuing. This is rational resource allocation, not failure.</li>
+        <li><b>Milestones</b> — Set achievable milestone counts. Start with 3-5 per goal. Too many makes early ROI look artificially low.</li>
+      </ul>
+    </details>
+    <details style="margin-top:6px">
+      <summary>Example scenario</summary>
+      <ul class="page-help-tips">
+        <li>Click <b>+ Add Goal</b> → "Close DesignStudio deal", expected value 0.8, milestones 5. The goal starts with ROI <b>0.00</b> (red) — no progress yet.</li>
+        <li>After sending the proposal (milestone 1/5 done), ROI climbs to <b>0.35</b> (amber). You're on track.</li>
+        <li>Two weeks pass with no response. ROI drops to <b>0.12</b> (red). The agent sends you: "DesignStudio deal has stalled. ROI is 0.12 — want to abandon or push through?"</li>
+        <li>You click <b>Pause</b> while waiting for their response. The agent stops nudging you about it. When they reply, click <b>Resume</b>.</li>
+      </ul>
+    </details>
+  </div>
   <div class="section-header">
     <span class="section-title">Goal Tracking &amp; ROI</span>
     <button class="btn btn-amber" onclick="toggleForm('goal-form')">+ Add Goal</button>
@@ -330,6 +481,28 @@ a:hover{text-decoration:underline}
 
 <!-- ===== MEMORIES TAB ===== -->
 <div class="tab-panel" id="panel-memories">
+  <div class="page-help">
+    <div class="page-help-title"><span class="help-icon">&#9671;</span> Memories</div>
+    <p class="page-help-desc">The agent's knowledge base. Memories decay naturally — accessed ones get reinforced, forgotten ones get archived. Nothing is ever deleted.</p>
+    <details>
+      <summary>How to use this page</summary>
+      <ul class="page-help-tips">
+        <li><b>Types</b> — Episodic (events, fast decay), Semantic (facts, slow decay), Relational (feelings, very slow), Procedural (methods, near-permanent).</li>
+        <li><b>Relevance</b> — Score 0-1. Below the retrieval threshold (default 0.3), memories get archived but still exist.</li>
+        <li><b>Pinned</b> — Protected from decay permanently. Use for critical information the agent must never forget.</li>
+        <li><b>Search</b> — Find memories by content. Toggle "Include Archived" to find forgotten items.</li>
+      </ul>
+    </details>
+    <details style="margin-top:6px">
+      <summary>Example scenario</summary>
+      <ul class="page-help-tips">
+        <li>Click <b>+ Add Memory</b> → "Priya's company uses React Native for mobile", type <b>Semantic</b>, pinned <b>No</b>. Relevance starts at 1.0.</li>
+        <li>Over the next month, if the agent never references Priya's tech stack, relevance decays to 0.25 and gets <b>archived</b>.</li>
+        <li>But if a conversation about mobile development happens and the agent retrieves this memory, relevance jumps back up — it got reinforced by access.</li>
+        <li>For critical facts like "Arjun's NDA expires March 2027", click <b>Pinned: Yes</b>. It will never decay, no matter how rarely accessed.</li>
+      </ul>
+    </details>
+  </div>
   <div class="section-header">
     <span class="section-title">Memory Decay Engine</span>
     <button class="btn btn-amber" onclick="toggleForm('memory-form')">+ Add Memory</button>
@@ -371,6 +544,29 @@ a:hover{text-decoration:underline}
 
 <!-- ===== VALUES TAB ===== -->
 <div class="tab-panel" id="panel-values">
+  <div class="page-help">
+    <div class="page-help-title"><span class="help-icon">&#10022;</span> Values</div>
+    <p class="page-help-desc">The agent's moral boundaries. Hard values block actions unconditionally — no override possible. Soft values flag actions for your review.</p>
+    <details>
+      <summary>How to use this page</summary>
+      <ul class="page-help-tips">
+        <li><b>Hard Values</b> — The absolute floor. An action that violates a hard value is blocked with no override path. Use for non-negotiable principles.</li>
+        <li><b>Soft Values</b> — Flag for human review. You can approve a soft value violation when context justifies it.</li>
+        <li><b>Violation Examples</b> — Concrete cases help the engine detect violations. More specific = better detection.</li>
+        <li><b>Presets</b> — The "business-safe" preset includes 3 hard values and 4 soft values for professional contexts.</li>
+      </ul>
+    </details>
+    <details style="margin-top:6px">
+      <summary>Example scenario</summary>
+      <ul class="page-help-tips">
+        <li>Click <b>+ Add Value</b> → description "Never share client revenue data externally", severity <b>Hard</b>.</li>
+        <li>Add violation examples: "forwarding client P&L to a competitor, sharing revenue in a public forum".</li>
+        <li>Add honoring examples: "using anonymized data in case studies, getting written permission before sharing".</li>
+        <li>Now if the agent tries to draft an email containing revenue figures to a non-client entity, the <b>Values Boundary Engine</b> blocks it — no approval path, no override. The action never happens.</li>
+        <li>For softer guidelines like "avoid weekend messages", use severity <b>Soft</b>. The agent flags it for your review — you can override if it's truly urgent.</li>
+      </ul>
+    </details>
+  </div>
   <div class="section-header">
     <span class="section-title">Values Boundary Engine</span>
     <button class="btn btn-amber" onclick="toggleForm('value-form')">+ Add Value</button>
@@ -398,6 +594,29 @@ a:hover{text-decoration:underline}
 
 <!-- ===== CONFIG TAB ===== -->
 <div class="tab-panel" id="panel-config">
+  <div class="page-help">
+    <div class="page-help-title"><span class="help-icon">&#9881;</span> Settings</div>
+    <p class="page-help-desc">All tunable parameters for the 10 engines. Changes apply immediately — no restart needed.</p>
+    <details>
+      <summary>How to use this page</summary>
+      <ul class="page-help-tips">
+        <li><b>Confidence Threshold</b> — The most important setting. Lower it if too many actions are held. Raise it for higher-stakes environments.</li>
+        <li><b>Impulse Rate</b> — Controls how often the agent acts on its own. Higher = more proactive behavior.</li>
+        <li><b>API Security</b> — Enable authentication to require API keys for all requests. Generate and manage keys here.</li>
+        <li><b>Data Retention</b> — Set auto-cleanup policies for old conversations, events, and resolved holds.</li>
+        <li><b>Feedback & Tuning</b> — Export training data from approved/rejected actions. Auto-tune thresholds based on your patterns.</li>
+      </ul>
+    </details>
+    <details style="margin-top:6px">
+      <summary>Example scenario</summary>
+      <ul class="page-help-tips">
+        <li>Your hold queue is always full — the agent holds everything for review. Go to <b>Confidence Threshold</b> (currently 0.65) and lower it to <b>0.50</b>. Click Save. Immediately, more actions will auto-approve.</li>
+        <li>The agent keeps messaging contacts at midnight. Set <b>Active Hours Start</b> to 9 and <b>End</b> to 18. Impulses now only fire during business hours.</li>
+        <li>You want to integrate with Slack. Go to <b>API Security</b> → enable auth → click <b>Generate Key</b>. Copy the key (shown once). Use it in your Slack webhook: <code>Authorization: Bearer hm_xxxxx</code>.</li>
+        <li>After 3 months, click <b>Feedback & Tuning</b> → "Apply Recommendations". The system analyzes your approval patterns and suggests optimal thresholds.</li>
+      </ul>
+    </details>
+  </div>
   <div class="section-header">
     <span class="section-title">Configuration</span>
     <button class="btn btn-amber" onclick="saveConfig()">Save Changes</button>
@@ -405,6 +624,189 @@ a:hover{text-decoration:underline}
   <div class="card">
     <div id="config-list"></div>
   </div>
+
+  <!-- Feedback & Tuning -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">Feedback & Tuning</div>
+    <div class="card-subtitle" style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px">Training data collected from approved/rejected actions and conversation patterns.</div>
+    <div id="feedback-stats" style="margin-top:12px">
+      <div style="color:var(--text-dim);font-size:.75rem">Loading feedback stats...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn btn-amber" onclick="exportTrainingData()">Export Training Data (JSONL)</button>
+      <button class="btn" onclick="exportTrainingData('csv')">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">Threshold Recommendations</div>
+    <div class="card-subtitle" style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px">Suggested threshold adjustments based on your approval/rejection history.</div>
+    <div id="feedback-recs" style="margin-top:12px">
+      <div style="color:var(--text-dim);font-size:.75rem">Loading recommendations...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn" onclick="previewAutoTune()">Preview Changes</button>
+      <button class="btn btn-amber" onclick="applyAutoTune()">Apply Recommendations</button>
+    </div>
+    <div id="autotune-result" style="margin-top:12px"></div>
+  </div>
+
+  <!-- API Security -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">API Security</div>
+    <div style="display:flex;align-items:center;gap:24px;margin-top:8px">
+      <div>
+        <div style="font-size:.8rem;font-weight:600;margin-bottom:4px">Authentication</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label class="api-toggle">
+            <input type="checkbox" id="auth-toggle" onchange="toggleAuthEnabled(this.checked)">
+            <span class="track" id="auth-toggle-track" style="background:var(--border)"></span>
+            <span class="thumb" id="auth-toggle-thumb" style="left:2px"></span>
+          </label>
+          <span id="auth-status-text" style="font-size:.75rem;color:var(--text-muted)">Disabled</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.8rem;font-weight:600;margin-bottom:4px">Rate Limit (req/min)</div>
+        <input type="number" id="rate-limit-input" value="100" style="width:100px;padding:4px 8px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:.75rem" onchange="updateRateLimit(this.value)">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+      <div style="font-size:.8rem;font-weight:600">API Keys</div>
+      <button class="btn btn-amber" onclick="generateApiKey()" style="font-size:.7rem;padding:4px 12px">Generate Key</button>
+    </div>
+    <div id="new-key-display" style="display:none;margin-top:10px;padding:10px;border:1px solid var(--green);border-radius:var(--radius);background:rgba(46,204,64,.08)">
+      <div style="font-size:.7rem;font-weight:600;color:var(--green)">New API Key (copy now &mdash; shown only once)</div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <input type="text" id="new-key-value" readonly style="flex:1;padding:4px 8px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:.75rem">
+        <button class="btn" onclick="copyApiKey()" style="font-size:.7rem;padding:3px 10px">Copy</button>
+      </div>
+    </div>
+    <div id="api-keys-list" style="margin-top:8px">
+      <div style="padding:12px;font-size:.75rem;color:var(--text-muted)">Loading keys...</div>
+    </div>
+  </div>
+
+  <!-- Data Retention -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">Data Retention</div>
+    <div class="card-subtitle" style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px">Automated cleanup of old conversations, events, memories, and resolved holds.</div>
+    <div id="retention-content" style="margin-top:8px">
+      <span style="font-size:.75rem;color:var(--text-dim)">Loading retention settings...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AGENTS TAB ===== -->
+<div class="tab-panel" id="panel-agents">
+  <div class="page-help">
+    <div class="page-help-title"><span class="help-icon">&#10022;</span> Agents</div>
+    <p class="page-help-desc">Run multiple independent agents from one dashboard. Each agent has its own personality, memory, goals, and values — completely isolated.</p>
+    <details>
+      <summary>How to use this page</summary>
+      <ul class="page-help-tips">
+        <li><b>Create</b> — Each new agent gets its own database, config, and conductor instance.</li>
+        <li><b>Switch</b> — Click "Switch" on an agent card to route all dashboard actions through that agent.</li>
+        <li><b>Messages</b> — Agents can communicate with each other via task handoffs, entity sharing, and alerts.</li>
+        <li><b>Isolation</b> — Modifying one agent's state never affects another. They share the server, not data.</li>
+      </ul>
+    </details>
+    <details style="margin-top:6px">
+      <summary>Example scenario</summary>
+      <ul class="page-help-tips">
+        <li>You run a design agency. Click <b>+ New Agent</b> → name "Sales Bot", personality "assertive". Click again → "Support Bot", personality "empathetic".</li>
+        <li>Sales Bot tracks prospects, fires follow-up impulses aggressively (high impulse rate). Support Bot tracks client issues, is more cautious (high confidence threshold).</li>
+        <li>A prospect becomes a client. Click <b>Share Entity</b> on Sales Bot to copy "Arjun" to Support Bot. Now both agents know Arjun, but track him differently.</li>
+        <li>Sales Bot sends a message to Support Bot: "Arjun just signed — he needs onboarding." Support Bot picks it up in its inbox and starts the onboarding goal.</li>
+      </ul>
+    </details>
+  </div>
+  <div class="section-header">
+    <span class="section-title">Multi-Agent Management</span>
+    <button class="btn btn-amber" onclick="toggleAgentCreateForm()">+ New Agent</button>
+  </div>
+
+  <div id="agent-create-form" style="display:none" class="card" style="margin-bottom:16px">
+    <div class="card-title">Create New Agent</div>
+    <div class="form-inline">
+      <div class="form-row"><label>Name</label><input id="new-agent-name" placeholder="Agent name"></div>
+      <div class="form-row"><label>Personality</label>
+        <select id="new-agent-personality">
+          <option value="colleague">Colleague</option><option value="assistant">Assistant</option>
+          <option value="mentor">Mentor</option><option value="coach">Coach</option>
+        </select>
+      </div>
+      <div class="form-row"><label>LLM Provider</label>
+        <select id="new-agent-provider">
+          <option value="anthropic">Anthropic</option><option value="openai">OpenAI</option>
+          <option value="gemini">Gemini</option><option value="groq">Groq</option><option value="ollama">Ollama</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-amber" onclick="createAgent()">Create Agent</button>
+  </div>
+
+  <div id="agents-list"></div>
+</div>
+
+<!-- ===== SIMULATE TAB ===== -->
+<div class="tab-panel" id="panel-simulate">
+  <div class="section-header">
+    <span class="section-title">Conversation Branching</span>
+  </div>
+  <div class="card">
+    <div class="card-title">What if I said...</div>
+    <div class="card-subtitle">Simulate a hypothetical message through the full pipeline without persisting anything.</div>
+    <div id="sim-single-input" style="margin-top:12px">
+      <div class="form-row">
+        <label>Message</label>
+        <input id="sim-message" placeholder="Type a hypothetical message..." style="width:100%">
+      </div>
+      <div class="form-row" style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <button class="btn btn-amber" onclick="runSimulation()">Simulate</button>
+        <button class="btn" onclick="toggleCompareMode()">Compare Mode</button>
+      </div>
+    </div>
+    <div id="sim-compare-input" style="display:none;margin-top:12px">
+      <div class="card-subtitle">Enter 2-3 messages to compare side by side.</div>
+      <div class="form-row"><label>Message 1</label><input id="sim-cmp-1" placeholder="First hypothetical..." style="width:100%"></div>
+      <div class="form-row"><label>Message 2</label><input id="sim-cmp-2" placeholder="Second hypothetical..." style="width:100%"></div>
+      <div class="form-row"><label>Message 3 (optional)</label><input id="sim-cmp-3" placeholder="Third hypothetical..." style="width:100%"></div>
+      <div class="form-row" style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <button class="btn btn-amber" onclick="runComparison()">Compare</button>
+        <button class="btn" onclick="toggleCompareMode()">Single Mode</button>
+      </div>
+    </div>
+  </div>
+  <div id="sim-loading" style="display:none" class="card">
+    <div style="color:var(--amber);font-size:.8rem">Running simulation...</div>
+  </div>
+  <div id="sim-results"></div>
+</div>
+
+<!-- ===== A/B TESTS TAB ===== -->
+<div class="tab-panel" id="panel-abtests">
+  <div class="section-header">
+    <span class="section-title">A/B Personality Testing</span>
+    <button class="btn btn-amber" onclick="toggleForm('ab-create-form')">+ Create Test</button>
+  </div>
+  <div class="card" id="ab-create-form" style="display:none">
+    <div class="card-title">Create A/B Test</div>
+    <div class="form-row"><label>Test Name</label><input id="ab-name" placeholder="e.g. Friendly vs Professional"></div>
+    <div class="grid-2" style="gap:12px">
+      <div class="form-row">
+        <label>Personality A</label>
+        <textarea id="ab-personality-a" rows="5" placeholder="Describe the first personality variant..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>Personality B</label>
+        <textarea id="ab-personality-b" rows="5" placeholder="Describe the second personality variant..."></textarea>
+      </div>
+    </div>
+    <div style="margin-top:8px"><button class="btn btn-amber" onclick="createABTest()">Create Test</button></div>
+  </div>
+  <div id="ab-tests-list"></div>
+  <div id="ab-test-detail" style="display:none"></div>
 </div>
 
 </div><!-- /content -->
@@ -471,7 +873,9 @@ function onTabSwitch(tab) {
   else if (tab === 'goals') loadGoals();
   else if (tab === 'memories') loadMemories();
   else if (tab === 'values') loadValues();
-  else if (tab === 'config') loadConfig();
+  else if (tab === 'config') { loadConfig(); loadFeedbackStats(); loadFeedbackRecommendations(); loadApiSecurity();  loadRetentionSection(); }
+  else if (tab === 'agents') loadAgents();
+  else if (tab === 'abtests') loadABTests();
 }
 
 function startDashboardRefresh() { dashboardInterval = setInterval(refreshDashboard, 3000); }
@@ -535,7 +939,7 @@ function renderQueue(data) {
   }
   let html = '';
   for (const h of items) {
-    html += `<div style="padding:10px 0;border-bottom:1px solid #191919">
+    html += `<div style="padding:10px 0;border-bottom:1px solid #F1F5F9">
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
         <div>
           <span style="color:var(--amber);font-weight:600;font-size:.78rem">${esc(h.action_type)}</span>
@@ -719,7 +1123,7 @@ async function loadGoals() {
         <td style="font-weight:600;color:${g.roi > 1 ? 'var(--green)' : g.roi < 0.3 ? 'var(--red)' : 'var(--amber)'}">${(g.roi || 0).toFixed(2)}</td>
         <td>
           <div style="display:flex;align-items:center;gap:6px">
-            <div style="flex:1;height:4px;background:#1a1a1a;border-radius:2px">
+            <div style="flex:1;height:4px;background:#E2E8F0;border-radius:2px">
               <div style="width:${progressPct}%;height:100%;background:var(--amber);border-radius:2px"></div>
             </div>
             <span style="font-size:.65rem;color:var(--text-dim)">${g.milestones_completed}/${g.milestones_total}</span>
@@ -776,7 +1180,7 @@ async function loadMemories() {
       <td>${esc(m.memory_type)}</td>
       <td>
         <div style="display:flex;align-items:center;gap:4px">
-          <div style="width:40px;height:3px;background:#1a1a1a;border-radius:2px">
+          <div style="width:40px;height:3px;background:#E2E8F0;border-radius:2px">
             <div style="width:${pct(m.relevance_score)}%;height:100%;background:var(--amber);border-radius:2px"></div>
           </div>
           <span style="font-size:.65rem">${m.relevance_score.toFixed(3)}</span>
@@ -815,7 +1219,7 @@ async function loadValues() {
       return;
     }
     $('values-empty').style.display = 'none';
-    $('values-list').innerHTML = values.map(v => `<div style="padding:12px 0;border-bottom:1px solid #191919">
+    $('values-list').innerHTML = values.map(v => `<div style="padding:12px 0;border-bottom:1px solid #F1F5F9">
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
         <span style="font-weight:600;color:var(--text)">${esc(v.description)}</span>
         ${badge(v.severity, v.severity)}
@@ -871,6 +1275,122 @@ async function loadConfig() {
   } catch (e) { toast('Failed to load config', 'err'); }
 }
 
+
+/* ===== FEEDBACK & TUNING ===== */
+async function loadFeedbackStats() {
+  try {
+    const stats = await api('/api/feedback/stats');
+    const el = $('feedback-stats');
+    if (!el) return;
+    const qualityColor = stats.data_quality === 'good' ? 'var(--green)' :
+      stats.data_quality === 'moderate' ? 'var(--amber)' :
+      stats.data_quality === 'minimal' ? 'var(--amber-dim)' : 'var(--text-dim)';
+    const approvalPct = stats.approval_rate ? (stats.approval_rate * 100).toFixed(1) + '%' : '--';
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div>
+          <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Total Samples</div>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--amber)">${stats.total_samples}</div>
+        </div>
+        <div>
+          <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Approval Rate</div>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--text)">${approvalPct}</div>
+        </div>
+        <div>
+          <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Data Quality</div>
+          <div style="font-size:1.3rem;font-weight:700;color:${qualityColor}">${stats.data_quality}</div>
+        </div>
+        <div>
+          <div style="font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Hold / Conv</div>
+          <div style="font-size:1.3rem;font-weight:700;color:var(--text)">${stats.hold_samples} / ${stats.conversation_samples}</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:.72rem;color:var(--text-dim)">
+        <div>Approved: <span style="color:var(--green)">${stats.approve_count}</span></div>
+        <div>Rejected: <span style="color:var(--red)">${stats.reject_count}</span></div>
+        <div>Avg Conf (Approved): <span style="color:var(--text)">${stats.avg_confidence_approved.toFixed(4)}</span></div>
+        <div>Avg Conf (Rejected): <span style="color:var(--text)">${stats.avg_confidence_rejected.toFixed(4)}</span></div>
+      </div>`;
+  } catch (e) { console.warn('Failed to load feedback stats', e); }
+}
+
+async function loadFeedbackRecommendations() {
+  try {
+    const data = await api('/api/feedback/recommendations');
+    const el = $('feedback-recs');
+    if (!el) return;
+    if (data.status === 'insufficient_data') {
+      el.innerHTML = '<div style="color:var(--text-dim);font-size:.75rem">Not enough data yet. Approve or reject more hold items to get recommendations.</div>';
+      return;
+    }
+    const recs = data.recommendations || [];
+    if (!recs.length) {
+      el.innerHTML = `<div style="font-size:.75rem;color:var(--text-dim)">
+        No changes recommended. Approval rate: ${(data.approval_rate * 100).toFixed(1)}% across ${data.total_resolved} resolved items.
+      </div>`;
+      return;
+    }
+    el.innerHTML = `
+      <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px">
+        Approval rate: ${(data.approval_rate * 100).toFixed(1)}% | ${data.total_resolved} resolved items
+      </div>
+      <table class="data-table" style="font-size:.75rem">
+        <thead><tr><th>Parameter</th><th>Current</th><th>Recommended</th><th>Impact</th><th>Confidence</th></tr></thead>
+        <tbody>${recs.map(r => `<tr>
+          <td style="font-weight:600">${r.parameter}${r.engine ? ' (' + r.engine + ')' : ''}</td>
+          <td>${r.current}</td>
+          <td style="color:var(--amber);font-weight:600">${r.recommended}</td>
+          <td>${r.impact === 'fewer_holds' ? '<span style="color:var(--green)">Fewer holds</span>' : '<span style="color:var(--red)">More holds</span>'}</td>
+          <td>${r.confidence}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div style="margin-top:8px;font-size:.68rem;color:var(--text-dim)">${recs.map(r => r.reason).join(' ')}</div>`;
+  } catch (e) { console.warn('Failed to load recommendations', e); }
+}
+
+function exportTrainingData(format) {
+  format = format || 'jsonl';
+  window.open(API + '/api/feedback/export?format=' + format, '_blank');
+}
+
+async function previewAutoTune() {
+  try {
+    const result = await api('/api/feedback/auto-tune?dry_run=true', { method: 'POST' });
+    const el = $('autotune-result');
+    if (!el) return;
+    if (!result.changes || !result.changes.length) {
+      el.innerHTML = '<div style="font-size:.75rem;color:var(--text-dim)">No changes to preview.</div>';
+      return;
+    }
+    el.innerHTML = `<div style="font-size:.72rem;font-weight:600;color:var(--amber);margin-bottom:6px">Preview (dry run):</div>
+      <table class="data-table" style="font-size:.75rem">
+        <thead><tr><th>Parameter</th><th>Current</th><th>New Value</th></tr></thead>
+        <tbody>${result.changes.map(c => `<tr>
+          <td>${c.parameter}</td>
+          <td>${c.current}</td>
+          <td style="color:var(--amber)">${c.recommended}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+  } catch (e) { toast('Failed to preview: ' + e.message, 'err'); }
+}
+
+async function applyAutoTune() {
+  if (!confirm('Apply recommended threshold changes? This will modify your configuration.')) return;
+  try {
+    const result = await api('/api/feedback/auto-tune?dry_run=false', { method: 'POST' });
+    const el = $('autotune-result');
+    if (!el) return;
+    if (!result.changes || !result.changes.length) {
+      el.innerHTML = '<div style="font-size:.75rem;color:var(--text-dim)">No changes applied.</div>';
+      return;
+    }
+    el.innerHTML = `<div style="font-size:.75rem;color:var(--green);font-weight:600">Applied ${result.total_changes} change(s) successfully.</div>`;
+    toast('Thresholds updated');
+    loadConfig();
+    loadFeedbackRecommendations();
+  } catch (e) { toast('Failed to apply: ' + e.message, 'err'); }
+}
+
 function onConfigChange(el) {
   const key = el.dataset.key;
   const orig = el.dataset.orig;
@@ -899,8 +1419,863 @@ async function saveConfig() {
   } catch (e) { toast('Failed: ' + e.message, 'err'); }
 }
 
+
+/* ===== SIMULATE ===== */
+let simCompareMode = false;
+
+function toggleCompareMode() {
+  simCompareMode = !simCompareMode;
+  $('sim-single-input').style.display = simCompareMode ? 'none' : 'block';
+  $('sim-compare-input').style.display = simCompareMode ? 'block' : 'none';
+  $('sim-results').innerHTML = '';
+}
+
+async function runSimulation() {
+  const message = $('sim-message').value.trim();
+  if (!message) { toast('Enter a message to simulate', 'err'); return; }
+  $('sim-loading').style.display = 'block';
+  $('sim-results').innerHTML = '';
+  try {
+    const data = await api('/api/simulate', { method: 'POST', body: { message } });
+    $('sim-results').innerHTML = renderSimResult(data);
+  } catch (e) { toast('Simulation failed: ' + e.message, 'err'); }
+  $('sim-loading').style.display = 'none';
+}
+
+async function runComparison() {
+  const msgs = [
+    $('sim-cmp-1').value.trim(),
+    $('sim-cmp-2').value.trim(),
+    $('sim-cmp-3').value.trim(),
+  ].filter(Boolean);
+  if (msgs.length < 2) { toast('Enter at least 2 messages to compare', 'err'); return; }
+  $('sim-loading').style.display = 'block';
+  $('sim-results').innerHTML = '';
+  try {
+    const data = await api('/api/simulate/compare', { method: 'POST', body: { messages: msgs } });
+    $('sim-results').innerHTML = renderCompareResults(data.comparisons || []);
+  } catch (e) { toast('Comparison failed: ' + e.message, 'err'); }
+  $('sim-loading').style.display = 'none';
+}
+
+function renderSimResult(r) {
+  var sc = r.state_changes || {};
+  var gr = r.gate_result || {};
+  var verdictCls = gr.verdict === 'proceed' ? 'badge-green' : gr.verdict === 'hold' ? 'badge-amber' : 'badge-red';
+  var sentColor = r.predicted_sentiment > 0.1 ? 'var(--green)' : r.predicted_sentiment < -0.1 ? 'var(--red)' : 'var(--text-dim)';
+  var html = '<div class="grid-2">';
+  // Left column: sentiment + state changes
+  html += '<div>';
+  html += '<div class="card"><div class="card-title">Predicted Sentiment</div>';
+  html += '<div style="font-size:2rem;font-weight:700;color:' + sentColor + '">' + (r.predicted_sentiment > 0 ? '+' : '') + r.predicted_sentiment + '</div>';
+  html += '<div style="font-size:.7rem;color:var(--text-dim);margin-top:4px">' + (r.predicted_sentiment > 0.3 ? 'Positive' : r.predicted_sentiment < -0.3 ? 'Negative' : 'Neutral') + '</div>';
+  html += '</div>';
+  html += '<div class="card"><div class="card-title">State Impact</div>';
+  var deltas = [
+    { label: 'Energy', key: 'energy_delta', color: 'var(--green)' },
+    { label: 'Mood', key: 'mood_delta', color: 'var(--amber)' },
+    { label: 'Fatigue', key: 'fatigue_delta', color: 'var(--red)' },
+    { label: 'Social Load', key: 'social_load_delta', color: 'var(--blue)' },
+    { label: 'Focus', key: 'focus_delta', color: 'var(--cyan)' },
+    { label: 'Boredom', key: 'boredom_delta', color: 'var(--purple)' },
+  ];
+  for (var i = 0; i < deltas.length; i++) {
+    var d = deltas[i];
+    var val = sc[d.key] || 0;
+    var valColor = val > 0 ? 'var(--green)' : val < 0 ? 'var(--red)' : 'var(--text-dim)';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:.75rem;border-bottom:1px solid #F1F5F9">';
+    html += '<span style="color:var(--text-dim)">' + d.label + '</span>';
+    html += '<span style="color:' + valColor + ';font-weight:600">' + (val > 0 ? '+' : '') + val + '</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '</div>';
+  // Right column: gate verdict + response
+  html += '<div>';
+  html += '<div class="card"><div class="card-title">Gate Verdict</div>';
+  html += '<div style="margin-bottom:8px"><span class="badge ' + verdictCls + '">' + esc(gr.verdict || 'unknown') + '</span></div>';
+  if (gr.would_be_held) {
+    html += '<div style="font-size:.72rem;color:var(--red);margin-bottom:6px">This response would be held.</div>';
+  }
+  if (gr.reasons && gr.reasons.length) {
+    html += '<div style="font-size:.72rem;color:var(--text-dim)">';
+    for (var ri = 0; ri < gr.reasons.length; ri++) {
+      html += '<div style="padding:2px 0;border-bottom:1px solid #F1F5F9">' + esc(gr.reasons[ri]) + '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '<div class="card"><div class="card-title">Predicted Response</div>';
+  html += '<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:.8rem;line-height:1.5;color:var(--text)">' + esc(r.predicted_response || '(none)') + '</div>';
+  html += '</div>';
+  if (r.related_context && r.related_context.length) {
+    html += '<div class="card"><div class="card-title">Related Context</div>';
+    for (var ci = 0; ci < r.related_context.length; ci++) {
+      var ctx = r.related_context[ci];
+      html += '<div style="font-size:.72rem;padding:4px 0;border-bottom:1px solid #F1F5F9"><span style="color:var(--amber)">[' + esc(ctx.type) + ']</span> ' + esc(ctx.content) + '</div>';
+    }
+    html += '</div>';
+  }
+  if (r.entities_affected && r.entities_affected.length) {
+    html += '<div class="card"><div class="card-title">Entities Affected</div>';
+    for (var ei = 0; ei < r.entities_affected.length; ei++) {
+      var ent = r.entities_affected[ei];
+      html += '<div style="font-size:.72rem;padding:4px 0">' + esc(ent.name) + ' <span style="color:var(--text-dim)">(' + esc(ent.type) + ')</span></div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderCompareResults(results) {
+  if (!results.length) return '<div class="card"><div class="empty">No results.</div></div>';
+  var cols = results.map(function() { return '1fr'; }).join(' ');
+  var html = '<div style="display:grid;grid-template-columns:' + cols + ';gap:16px">';
+  for (var j = 0; j < results.length; j++) {
+    var r = results[j];
+    var sc = r.state_changes || {};
+    var gr = r.gate_result || {};
+    var verdictCls = gr.verdict === 'proceed' ? 'badge-green' : gr.verdict === 'hold' ? 'badge-amber' : 'badge-red';
+    var sentColor = r.predicted_sentiment > 0.1 ? 'var(--green)' : r.predicted_sentiment < -0.1 ? 'var(--red)' : 'var(--text-dim)';
+    html += '<div>';
+    html += '<div class="card"><div class="card-title" style="font-size:.7rem;word-break:break-word">"' + esc(r.input) + '"</div>';
+    html += '<div style="font-size:1.2rem;font-weight:700;color:' + sentColor + ';margin-bottom:8px">' + (r.predicted_sentiment > 0 ? '+' : '') + r.predicted_sentiment + '</div>';
+    var cmpDeltas = [
+      { label: 'Energy', key: 'energy_delta' },
+      { label: 'Mood', key: 'mood_delta' },
+      { label: 'Fatigue', key: 'fatigue_delta' },
+      { label: 'Social', key: 'social_load_delta' },
+      { label: 'Focus', key: 'focus_delta' },
+    ];
+    for (var di = 0; di < cmpDeltas.length; di++) {
+      var dd = cmpDeltas[di];
+      var dval = sc[dd.key] || 0;
+      var dvalColor = dval > 0 ? 'var(--green)' : dval < 0 ? 'var(--red)' : 'var(--text-dim)';
+      html += '<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:.68rem">';
+      html += '<span style="color:var(--text-dim)">' + dd.label + '</span>';
+      html += '<span style="color:' + dvalColor + ';font-weight:600">' + (dval > 0 ? '+' : '') + dval + '</span>';
+      html += '</div>';
+    }
+    html += '<div style="margin:8px 0"><span class="badge ' + verdictCls + '">' + esc(gr.verdict || '?') + '</span></div>';
+    html += '<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:8px;font-size:.7rem;line-height:1.4;color:var(--text);max-height:120px;overflow-y:auto">' + esc(r.predicted_response || '(none)') + '</div>';
+    html += '</div></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ===== API SECURITY ===== */
+async function loadApiSecurity() {
+  try {
+    const config = await api('/api/config');
+    const toggle = $('auth-toggle');
+    const track = $('auth-toggle-track');
+    const thumb = $('auth-toggle-thumb');
+    const statusText = $('auth-status-text');
+    const rateInput = $('rate-limit-input');
+    if (toggle) toggle.checked = !!config.api_auth_enabled;
+    if (track) track.style.background = config.api_auth_enabled ? 'var(--green)' : 'var(--border)';
+    if (thumb) thumb.style.left = config.api_auth_enabled ? '22px' : '2px';
+    if (statusText) statusText.textContent = config.api_auth_enabled ? 'Enabled' : 'Disabled';
+    if (rateInput) rateInput.value = config.api_rate_limit || 100;
+  } catch (e) {}
+  loadApiKeysList();
+}
+
+async function toggleAuthEnabled(enabled) {
+  await api('/api/config', { method: 'PATCH', body: { api_auth_enabled: enabled } });
+  const track = $('auth-toggle-track');
+  const thumb = $('auth-toggle-thumb');
+  const statusText = $('auth-status-text');
+  if (track) track.style.background = enabled ? 'var(--green)' : 'var(--border)';
+  if (thumb) thumb.style.left = enabled ? '22px' : '2px';
+  if (statusText) statusText.textContent = enabled ? 'Enabled' : 'Disabled';
+  toast(enabled ? 'API auth enabled' : 'API auth disabled');
+}
+
+async function updateRateLimit(val) {
+  const limit = parseInt(val) || 100;
+  await api('/api/config', { method: 'PATCH', body: { api_rate_limit: limit } });
+  toast('Rate limit updated to ' + limit + ' req/min');
+}
+
+async function generateApiKey() {
+  try {
+    const result = await api('/api/auth/keys', { method: 'POST' });
+    if (result && result.key) {
+      const display = $('new-key-display');
+      const input = $('new-key-value');
+      if (display) display.style.display = 'block';
+      if (input) input.value = result.key;
+      loadApiKeysList();
+      toast('API key generated');
+    }
+  } catch (e) { toast('Failed to generate key', 'err'); }
+}
+
+function copyApiKey() {
+  const input = $('new-key-value');
+  if (input) {
+    input.select();
+    navigator.clipboard.writeText(input.value).then(function() { toast('Key copied'); });
+  }
+}
+
+async function loadApiKeysList() {
+  try {
+    const data = await api('/api/auth/keys');
+    const container = $('api-keys-list');
+    if (!container) return;
+    const keys = data && data.keys ? data.keys : [];
+    if (keys.length === 0) {
+      container.innerHTML = '<div style="padding:12px;font-size:.75rem;color:var(--text-muted)">No API keys yet.</div>';
+      return;
+    }
+    container.innerHTML = keys.map(function(k) {
+      var created = new Date(k.created_at * 1000).toLocaleDateString();
+      var lastUsed = k.last_used ? new Date(k.last_used * 1000).toLocaleDateString() : 'Never';
+      return '<div class="api-key-row">' +
+        '<div><span class="api-key-mono">' + esc(k.key_preview) + '</span>' +
+        '<span class="api-key-meta">Created ' + created + '</span>' +
+        '<span class="api-key-meta">Used: ' + lastUsed + '</span>' +
+        '<span class="api-key-meta">Reqs: ' + k.request_count + '</span></div>' +
+        "<button class=\"btn-revoke\" onclick=\"revokeApiKey('" + k.id + "')\">Revoke</button>" +
+        '</div>';
+    }).join('');
+  } catch (e) { /* ignore */ }
+}
+
+async function revokeApiKey(keyId) {
+  if (!confirm('Revoke this API key?')) return;
+  try {
+    var result = await api('/api/auth/keys/' + keyId, { method: 'DELETE' });
+    if (result && result.ok) {
+      toast('API key revoked');
+      loadApiKeysList();
+    }
+  } catch (e) { toast('Failed to revoke key', 'err'); }
+}
+
+
+
+/* ===== DATA RETENTION ===== */
+async function loadRetentionSection() {
+  const el = document.getElementById('retention-content');
+  if (!el) return;
+
+  const data = await api('/api/retention');
+  if (!data) {
+    el.innerHTML = '<span style="font-size:.75rem;color:var(--text-dim)">Could not load retention settings.</span>';
+    return;
+  }
+
+  const stats = data.stats || {};
+  const toggleBg = data.enabled ? 'var(--green, #22c55e)' : 'var(--border)';
+  const toggleLeft = data.enabled ? '22px' : '2px';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+        <input type="checkbox" id="retention-enabled" ${data.enabled ? 'checked' : ''} onchange="toggleRetention(this.checked)"
+          style="opacity:0;width:0;height:0">
+        <span style="position:absolute;top:0;left:0;right:0;bottom:0;background:${toggleBg};border-radius:24px;transition:background 0.2s"></span>
+        <span style="position:absolute;top:2px;left:${toggleLeft};width:20px;height:20px;background:#fff;border-radius:50%;transition:left 0.2s"></span>
+      </label>
+      <span style="font-size:.8rem;font-weight:600">${data.enabled ? 'Enabled' : 'Disabled'}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="config-row" style="flex-direction:column;align-items:flex-start">
+        <span class="config-key">Conversations (days)</span>
+        <div class="config-val"><input type="number" value="${data.retention_conversations_days}" data-key="retention_conversations_days" data-orig="${data.retention_conversations_days}" onchange="onConfigChange(this)"></div>
+      </div>
+      <div class="config-row" style="flex-direction:column;align-items:flex-start">
+        <span class="config-key">Events (days)</span>
+        <div class="config-val"><input type="number" value="${data.retention_events_days}" data-key="retention_events_days" data-orig="${data.retention_events_days}" onchange="onConfigChange(this)"></div>
+      </div>
+      <div class="config-row" style="flex-direction:column;align-items:flex-start">
+        <span class="config-key">Memory Archive (days)</span>
+        <div class="config-val"><input type="number" value="${data.retention_memory_archive_days}" data-key="retention_memory_archive_days" data-orig="${data.retention_memory_archive_days}" onchange="onConfigChange(this)"></div>
+      </div>
+      <div class="config-row" style="flex-direction:column;align-items:flex-start">
+        <span class="config-key">Resolved Holds (days)</span>
+        <div class="config-val"><input type="number" value="${data.retention_holds_days}" data-key="retention_holds_days" data-orig="${data.retention_holds_days}" onchange="onConfigChange(this)"></div>
+      </div>
+      <div class="config-row" style="flex-direction:column;align-items:flex-start">
+        <span class="config-key">Run Hour (0-23)</span>
+        <div class="config-val"><input type="number" min="0" max="23" value="${data.retention_run_hour}" data-key="retention_run_hour" data-orig="${data.retention_run_hour}" onchange="onConfigChange(this)"></div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-input);border-radius:var(--radius);padding:10px;margin-bottom:14px;font-size:.75rem">
+      <div style="font-weight:600;margin-bottom:6px;color:var(--amber-dim)">Current Data Sizes</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <div>Conversations: <strong>${stats.total_conversations || 0}</strong></div>
+        <div>Events: <strong>${stats.total_events || 0}</strong></div>
+        <div>Memories: <strong>${stats.total_memories || 0}</strong></div>
+        <div>Archived: <strong>${stats.archived_memories || 0}</strong></div>
+        <div>Total Holds: <strong>${stats.total_holds || 0}</strong></div>
+        <div>Resolved: <strong>${stats.resolved_holds || 0}</strong></div>
+      </div>
+    </div>
+
+    <div id="retention-preview-box" style="display:none;background:var(--bg-input);border-radius:var(--radius);padding:10px;margin-bottom:14px;font-size:.75rem"></div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="previewRetention()">Preview</button>
+      <button class="btn btn-amber" onclick="applyRetention()">Apply Now</button>
+    </div>
+  `;
+}
+
+async function toggleRetention(enabled) {
+  await api('/api/config', { method: 'PATCH', body: { retention_enabled: enabled } });
+  toast(enabled ? 'Retention enabled' : 'Retention disabled');
+  loadRetentionSection();
+}
+
+async function previewRetention() {
+  const preview = await api('/api/retention/preview', { method: 'POST' });
+  if (!preview) return;
+
+  const box = document.getElementById('retention-preview-box');
+  if (!box) return;
+
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="font-weight:600;margin-bottom:6px;color:var(--amber-dim)">Preview: What Would Be Affected</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div>Conversations to delete: <strong>${preview.conversations_to_delete || 0}</strong></div>
+      <div>Events to delete: <strong>${preview.events_to_delete || 0}</strong></div>
+      <div>Memories to archive: <strong>${preview.memories_to_archive || 0}</strong></div>
+      <div>Holds to delete: <strong>${preview.holds_to_delete || 0}</strong></div>
+    </div>
+  `;
+}
+
+async function applyRetention() {
+  if (!confirm('Apply retention policies now? This will permanently delete old data.')) return;
+
+  const result = await api('/api/retention/apply', { method: 'POST' });
+  if (result && result.ok) {
+    const r = result.results;
+    toast(r.conversations_deleted + ' convos, ' + r.events_deleted + ' events deleted; ' + r.memories_archived + ' archived; ' + r.holds_deleted + ' holds removed');
+    loadRetentionSection();
+  } else {
+    toast('Failed to apply retention', 'err');
+  }
+}
+
+
+/* ===== A/B TESTING ===== */
+async function loadABTests() {
+  try {
+    var data = await api('/api/ab-tests');
+    var tests = data.tests || [];
+    if (!tests.length) {
+      $('ab-tests-list').innerHTML = '<div class="card"><div style="color:var(--text-dim);text-align:center;padding:24px">No A/B tests yet. Create one to start comparing personality variants.</div></div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < tests.length; i++) {
+      var t = tests[i];
+      var statusCls = t.status === 'active' ? 'active' : 'completed';
+      var winnerLabel = t.winner ? ' &mdash; Winner: Variant ' + esc(t.winner) : '';
+      html += '<div class="card" style="margin-bottom:12px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        + '<div><span style="font-weight:600;font-size:.85rem">' + esc(t.name) + '</span> '
+        + badge(t.status, statusCls) + winnerLabel + '</div>'
+        + '<div class="btn-group">'
+        + '<button class="btn btn-sm" onclick="viewABResults(\'' + t.id + '\')">Results</button>'
+        + (t.status === 'active' ? '<button class="btn btn-sm btn-red" onclick="endABTest(\'' + t.id + '\')">End Test</button>' : '')
+        + '</div></div>'
+        + '<div class="grid-2" style="gap:12px">'
+        + '<div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px">'
+        + '<div style="font-size:.7rem;color:var(--amber);text-transform:uppercase;margin-bottom:4px;font-weight:600">Variant A</div>'
+        + '<div style="font-size:.72rem;color:var(--text-dim);white-space:pre-wrap;max-height:80px;overflow-y:auto">' + esc(t.personality_a) + '</div></div>'
+        + '<div style="border:1px solid var(--border);border-radius:var(--radius);padding:10px">'
+        + '<div style="font-size:.7rem;color:var(--blue);text-transform:uppercase;margin-bottom:4px;font-weight:600">Variant B</div>'
+        + '<div style="font-size:.72rem;color:var(--text-dim);white-space:pre-wrap;max-height:80px;overflow-y:auto">' + esc(t.personality_b) + '</div></div>'
+        + '</div>'
+        + '<div style="font-size:.65rem;color:var(--text-muted);margin-top:8px">Started ' + fmtDate(t.start_time) + (t.end_time ? ' | Ended ' + fmtDate(t.end_time) : '') + '</div>'
+        + '</div>';
+    }
+    $('ab-tests-list').innerHTML = html;
+  } catch (e) { toast('Failed to load A/B tests', 'err'); }
+}
+
+async function createABTest() {
+  var name = $('ab-name').value.trim();
+  var pa = $('ab-personality-a').value.trim();
+  var pb = $('ab-personality-b').value.trim();
+  if (!name || !pa || !pb) { toast('Fill in all fields', 'err'); return; }
+  try {
+    await api('/api/ab-tests', { method: 'POST', body: { name: name, personality_a: pa, personality_b: pb }});
+    $('ab-name').value = '';
+    $('ab-personality-a').value = '';
+    $('ab-personality-b').value = '';
+    $('ab-create-form').style.display = 'none';
+    toast('A/B test created');
+    loadABTests();
+  } catch (e) { toast('Failed: ' + e.message, 'err'); }
+}
+
+async function viewABResults(testId) {
+  try {
+    var data = await api('/api/ab-tests/' + testId + '/results');
+    if (data.error) { toast(data.error, 'err'); return; }
+    var test = data.test;
+    var va = data.variants.A || {};
+    var vb = data.variants.B || {};
+    var sig = data.significance || {};
+    var metrics = ['response_sentiment', 'approval_rate', 'user_satisfaction'];
+    var barsHtml = '';
+    for (var mi = 0; mi < metrics.length; mi++) {
+      var m = metrics[mi];
+      var aVal = va[m] ? va[m].avg : 0;
+      var bVal = vb[m] ? vb[m].avg : 0;
+      var aCount = va[m] ? va[m].count : 0;
+      var bCount = vb[m] ? vb[m].count : 0;
+      var maxVal = Math.max(aVal, bVal, 0.01);
+      var sigInfo = sig[m];
+      var sigLabel = sigInfo
+        ? (sigInfo.significant
+          ? '<span style="color:var(--green)">Significant (p=' + sigInfo.p_value + ')</span>'
+          : '<span style="color:var(--text-muted)">Not significant (p=' + sigInfo.p_value + ')</span>')
+        : '<span style="color:var(--text-muted)">No data</span>';
+      var label = m.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+      barsHtml += '<div style="margin-bottom:16px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+        + '<span style="font-size:.75rem;font-weight:600">' + label + '</span>'
+        + '<span style="font-size:.65rem">' + sigLabel + '</span></div>'
+        + '<div style="display:flex;gap:8px;align-items:center;margin-bottom:3px">'
+        + '<span style="font-size:.65rem;color:var(--amber);width:18px">A</span>'
+        + '<div style="flex:1;background:#F1F5F9;border-radius:2px;height:18px;overflow:hidden">'
+        + '<div style="width:' + (maxVal > 0 ? (aVal / maxVal * 100) : 0) + '%;height:100%;background:var(--amber);border-radius:2px;transition:width .3s"></div></div>'
+        + '<span style="font-size:.65rem;color:var(--text-dim);min-width:60px;text-align:right">' + aVal.toFixed(3) + ' (n=' + aCount + ')</span></div>'
+        + '<div style="display:flex;gap:8px;align-items:center">'
+        + '<span style="font-size:.65rem;color:var(--blue);width:18px">B</span>'
+        + '<div style="flex:1;background:#F1F5F9;border-radius:2px;height:18px;overflow:hidden">'
+        + '<div style="width:' + (maxVal > 0 ? (bVal / maxVal * 100) : 0) + '%;height:100%;background:var(--blue);border-radius:2px;transition:width .3s"></div></div>'
+        + '<span style="font-size:.65rem;color:var(--text-dim);min-width:60px;text-align:right">' + bVal.toFixed(3) + ' (n=' + bCount + ')</span></div></div>';
+    }
+    var sampleA = va._sample_size || 0;
+    var sampleB = vb._sample_size || 0;
+    $('ab-test-detail').style.display = 'block';
+    $('ab-test-detail').innerHTML = '<div class="card" style="margin-top:16px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+      + '<div><div class="card-title" style="margin-bottom:2px">' + esc(test.name) + ' &mdash; Results</div>'
+      + '<div style="font-size:.65rem;color:var(--text-muted)">Sample: A=' + sampleA + ' chats, B=' + sampleB + ' chats</div></div>'
+      + '<button class="btn btn-sm" onclick="$(\'ab-test-detail\').style.display=\'none\'">Close</button></div>'
+      + (barsHtml || '<div style="color:var(--text-dim);text-align:center;padding:16px">No results recorded yet. Metrics are collected as conversations happen.</div>')
+      + '</div>';
+  } catch (e) { toast('Failed to load results', 'err'); }
+}
+
+async function endABTest(testId) {
+  if (!confirm('End this A/B test?')) return;
+  try {
+    var results = await api('/api/ab-tests/' + testId + '/results');
+    var winner = null;
+    if (results && results.significance) {
+      for (var m in results.significance) {
+        var s = results.significance[m];
+        if (s.significant && s.leading !== 'tie') { winner = s.leading; break; }
+      }
+    }
+    await api('/api/ab-tests/' + testId + '/end', { method: 'POST', body: { winner: winner }});
+    toast('Test ended' + (winner ? ' - Variant ' + winner + ' wins' : ''));
+    $('ab-test-detail').style.display = 'none';
+    loadABTests();
+  } catch (e) { toast('Failed: ' + e.message, 'err'); }
+}
+
+
+/* ===== DASHBOARD CUSTOMIZATION ===== */
+let dashboardCustomizeMode = false;
+const DASHBOARD_LAYOUT_KEY = 'humane-dashboard-layout';
+const DEFAULT_WIDGET_ORDER = ['status_banner', 'state_bars', 'recent_activity', 'hold_queue_preview', 'insights_card'];
+const WIDGET_LABELS = {
+  status_banner: 'Human State',
+  state_bars: 'Evaluate Action',
+  recent_activity: 'Fire Impulse',
+  hold_queue_preview: 'Hold Queue',
+  insights_card: 'Recent Events'
+};
+
+function getDashboardLayout() {
+  try {
+    const saved = localStorage.getItem(DASHBOARD_LAYOUT_KEY);
+    if (saved) {
+      const layout = JSON.parse(saved);
+      if (layout.order && Array.isArray(layout.order)) return layout;
+    }
+  } catch (e) {}
+  return { order: [...DEFAULT_WIDGET_ORDER], hidden: [] };
+}
+
+function toggleCustomizeMode() {
+  dashboardCustomizeMode = !dashboardCustomizeMode;
+  const container = document.getElementById('widgets-container');
+  const barContainer = document.getElementById('customize-bar-container');
+  const btn = document.getElementById('btn-customize');
+  if (dashboardCustomizeMode) {
+    container.classList.add('customize-mode');
+    btn.innerHTML = '&#10003; Done';
+    btn.className = 'btn btn-green';
+    barContainer.innerHTML = '<div class="customize-bar"><span class="customize-label">&#9881; Customizing Dashboard &mdash; drag to reorder, click eye to hide/show</span><button class="btn btn-sm btn-amber" onclick="saveDashboardLayout()">Save Layout</button><button class="btn btn-sm" onclick="resetDashboardLayout()">Reset Layout</button><button class="btn btn-sm" onclick="toggleCustomizeMode()">Done</button></div>';
+    container.querySelectorAll('.widget-wrapper').forEach(function(w) { w.draggable = true; });
+    initWidgetDragDrop();
+    applyLayoutVisibility();
+  } else {
+    container.classList.remove('customize-mode');
+    btn.innerHTML = '&#9881; Customize';
+    btn.className = 'btn btn-amber';
+    barContainer.innerHTML = '';
+    container.querySelectorAll('.widget-wrapper').forEach(function(w) { w.draggable = false; });
+    applyLayoutVisibility();
+  }
+}
+
+function applyLayoutVisibility() {
+  var layout = getDashboardLayout();
+  var hiddenSet = new Set(layout.hidden || []);
+  var container = document.getElementById('widgets-container');
+  container.querySelectorAll('.widget-wrapper').forEach(function(w) {
+    var wid = w.dataset.widgetId;
+    var toggleBtn = w.querySelector('.widget-toggle');
+    if (hiddenSet.has(wid)) {
+      w.classList.add('hidden-widget');
+      if (toggleBtn) toggleBtn.innerHTML = '&#128065;&#x0336;';
+      if (!dashboardCustomizeMode) w.style.display = 'none';
+      else w.style.display = '';
+    } else {
+      w.classList.remove('hidden-widget');
+      if (toggleBtn) toggleBtn.innerHTML = '&#128065;';
+      w.style.display = '';
+    }
+  });
+  var orderedIds = layout.order;
+  var wrappers = {};
+  container.querySelectorAll('.widget-wrapper').forEach(function(w) { wrappers[w.dataset.widgetId] = w; });
+  for (var i = 0; i < orderedIds.length; i++) {
+    if (wrappers[orderedIds[i]]) container.appendChild(wrappers[orderedIds[i]]);
+  }
+}
+
+function toggleWidgetVisibility(widgetId) {
+  var layout = getDashboardLayout();
+  var hidden = layout.hidden || [];
+  var idx = hidden.indexOf(widgetId);
+  if (idx >= 0) hidden.splice(idx, 1);
+  else hidden.push(widgetId);
+  layout.hidden = hidden;
+  localStorage.setItem(DASHBOARD_LAYOUT_KEY, JSON.stringify(layout));
+  applyLayoutVisibility();
+}
+
+function saveDashboardLayout() {
+  var container = document.getElementById('widgets-container');
+  var order = [];
+  container.querySelectorAll('.widget-wrapper').forEach(function(w) { order.push(w.dataset.widgetId); });
+  var layout = getDashboardLayout();
+  layout.order = order;
+  localStorage.setItem(DASHBOARD_LAYOUT_KEY, JSON.stringify(layout));
+  toast('Dashboard layout saved');
+}
+
+function resetDashboardLayout() {
+  localStorage.removeItem(DASHBOARD_LAYOUT_KEY);
+  applyLayoutVisibility();
+  toast('Dashboard layout reset to defaults');
+}
+
+function initWidgetDragDrop() {
+  var container = document.getElementById('widgets-container');
+  var draggedEl = null;
+  container.querySelectorAll('.widget-wrapper').forEach(function(wrapper) {
+    wrapper.addEventListener('dragstart', function(e) {
+      draggedEl = this;
+      this.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', this.dataset.widgetId);
+    });
+    wrapper.addEventListener('dragend', function() {
+      this.style.opacity = '';
+      container.querySelectorAll('.widget-wrapper').forEach(function(w) { w.classList.remove('drag-over'); });
+      draggedEl = null;
+    });
+    wrapper.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (this !== draggedEl) this.classList.add('drag-over');
+    });
+    wrapper.addEventListener('dragleave', function() {
+      this.classList.remove('drag-over');
+    });
+    wrapper.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      if (draggedEl && this !== draggedEl) {
+        var allWrappers = Array.from(container.querySelectorAll('.widget-wrapper'));
+        var dragIdx = allWrappers.indexOf(draggedEl);
+        var dropIdx = allWrappers.indexOf(this);
+        if (dragIdx < dropIdx) {
+          container.insertBefore(draggedEl, this.nextSibling);
+        } else {
+          container.insertBefore(draggedEl, this);
+        }
+      }
+    });
+  });
+}
+
+/* ===== AGENTS ===== */
+var MSG_TYPE_LABELS = {
+  task_handoff: 'Task Handoff', info_share: 'Info Share',
+  goal_update: 'Goal Update', entity_share: 'Entity Share', alert: 'Alert'
+};
+var MSG_TYPE_COLORS = {
+  task_handoff: 'var(--blue)', info_share: 'var(--green)',
+  goal_update: 'var(--amber)', entity_share: 'var(--purple)', alert: 'var(--red)'
+};
+var agentsList = [];
+
+function toggleAgentCreateForm() {
+  var el = $('agent-create-form');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadAgents() {
+  var data = await api('/api/agents');
+  agentsList = data.agents || [];
+  var container = $('agents-list');
+  if (!agentsList.length) {
+    container.innerHTML = '<div class="card"><div class="empty">No agents registered. Create one to get started.</div></div>';
+    return;
+  }
+  var inboxes = await Promise.all(agentsList.map(function(a) {
+    return api('/api/agents/' + (a.id || a.agent_id) + '/inbox?unread_only=false').catch(function() { return { messages: [] }; });
+  }));
+
+  container.innerHTML = agentsList.map(function(a, idx) {
+    var aid = a.id || a.agent_id;
+    var msgs = (inboxes[idx] && inboxes[idx].messages) || [];
+    var unread = msgs.filter(function(m) { return !m.read; }).length;
+    var unreadBadge = unread > 0
+      ? '<span style="display:inline-block;min-width:18px;height:18px;line-height:18px;text-align:center;border-radius:9px;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;margin-left:6px;padding:0 5px">' + unread + '</span>'
+      : '';
+    var created = a.created_at ? new Date(typeof a.created_at === 'number' ? (a.created_at > 1e12 ? a.created_at : a.created_at * 1000) : a.created_at).toLocaleDateString() : '--';
+    var status = a.status || 'running';
+    var statusBadge = status === 'running' ? 'badge-green' : 'badge-amber';
+    var others = agentsList.filter(function(o) { return (o.id || o.agent_id) !== aid; });
+    var agentOpts = others.map(function(o) { return '<option value="' + (o.id || o.agent_id) + '">' + esc(o.name) + '</option>'; }).join('');
+    var safeName = esc(a.name).replace(/'/g, "\\'");
+
+    return '<div class="card" style="margin-bottom:16px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      + '<div style="display:flex;align-items:center"><span style="font-size:.95rem;font-weight:700">' + esc(a.name) + '</span>' + unreadBadge + '</div>'
+      + '<div style="display:flex;gap:6px;align-items:center"><span class="badge ' + statusBadge + '">' + esc(status) + '</span>'
+      + '<span style="font-size:.7rem;color:var(--text-dim)">Created ' + created + '</span></div>'
+      + '</div>'
+      + '<div style="font-size:.75rem;color:var(--text-dim);margin-bottom:10px">ID: ' + esc(aid) + ' &middot; DB: ' + esc(a.db_path || '--') + '</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+      + '<button class="btn" onclick="toggleAgentPanel(\'' + aid + '\',\'msgs\')">Messages' + (unread > 0 ? ' (' + unread + ')' : '') + '</button>'
+      + '<button class="btn" onclick="toggleAgentPanel(\'' + aid + '\',\'send\')">Send Message</button>'
+      + (others.length ? '<button class="btn" onclick="toggleAgentPanel(\'' + aid + '\',\'share\')">Share Entity/Goal</button>' : '')
+      + '<button class="btn" style="color:var(--red)" onclick="agentDelete(\'' + aid + '\',\'' + safeName + '\')">Delete</button>'
+      + '</div>'
+      + '<div id="agent-msgs-' + aid + '" style="display:none"></div>'
+      + '<div id="agent-send-' + aid + '" style="display:none">'
+      + '<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px">'
+      + '<div style="font-weight:600;font-size:.8rem;margin-bottom:8px">Send Message</div>'
+      + '<div style="display:flex;flex-direction:column;gap:8px">'
+      + '<select id="send-to-' + aid + '" style="padding:4px 8px;border-radius:var(--radius);border:1px solid var(--border);font-size:.75rem;background:var(--bg-input);color:var(--text)">'
+      + '<option value="">-- Recipient --</option>' + agentOpts + '</select>'
+      + '<select id="send-type-' + aid + '" style="padding:4px 8px;border-radius:var(--radius);border:1px solid var(--border);font-size:.75rem;background:var(--bg-input);color:var(--text)">'
+      + '<option value="info_share">Info Share</option><option value="task_handoff">Task Handoff</option>'
+      + '<option value="goal_update">Goal Update</option><option value="alert">Alert</option></select>'
+      + '<textarea id="send-content-' + aid + '" placeholder="Message content..." rows="2" style="padding:4px 8px;border-radius:var(--radius);border:1px solid var(--border);font-size:.75rem;resize:vertical;background:var(--bg-input);color:var(--text)"></textarea>'
+      + '<div style="display:flex;gap:8px">'
+      + '<button class="btn btn-amber" onclick="sendAgentMsg(\'' + aid + '\')">Send</button>'
+      + '<button class="btn" onclick="broadcastAgentMsg(\'' + aid + '\')">Broadcast All</button>'
+      + '</div></div></div></div>'
+      + '<div id="agent-share-' + aid + '" style="display:none">'
+      + '<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px">'
+      + '<div style="font-weight:600;font-size:.8rem;margin-bottom:8px">Share Entity / Goal</div>'
+      + '<div style="display:flex;flex-direction:column;gap:8px">'
+      + '<select id="share-to-' + aid + '" style="padding:4px 8px;border-radius:var(--radius);border:1px solid var(--border);font-size:.75rem;background:var(--bg-input);color:var(--text)">'
+      + '<option value="">-- Recipient --</option>' + agentOpts + '</select>'
+      + '<div style="display:flex;gap:8px;align-items:flex-end">'
+      + '<div style="flex:1"><label style="font-size:.65rem;color:var(--text-dim)">Entity ID</label>'
+      + '<input id="share-entity-' + aid + '" placeholder="entity-id" style="width:100%;padding:4px 8px;border-radius:var(--radius);border:1px solid var(--border);font-size:.75rem;background:var(--bg-input);color:var(--text)"></div>'
+      + '<button class="btn btn-amber" onclick="shareEntity(\'' + aid + '\')">Share Entity</button></div>'
+      + '<div style="display:flex;gap:8px;align-items:flex-end">'
+      + '<div style="flex:1"><label style="font-size:.65rem;color:var(--text-dim)">Goal ID</label>'
+      + '<input id="share-goal-' + aid + '" placeholder="goal-id" style="width:100%;padding:4px 8px;border-radius:var(--radius);border:1px solid var(--border);font-size:.75rem;background:var(--bg-input);color:var(--text)"></div>'
+      + '<button class="btn btn-amber" onclick="shareGoal(\'' + aid + '\')">Share Goal</button></div>'
+      + '</div></div></div>'
+      + '</div>';
+  }).join('');
+}
+
+function toggleAgentPanel(agentId, panel) {
+  var panels = ['msgs', 'send', 'share'];
+  var target = $('agent-' + panel + '-' + agentId);
+  var isOpen = target && target.style.display !== 'none';
+  panels.forEach(function(p) {
+    var el = $('agent-' + p + '-' + agentId);
+    if (el) el.style.display = 'none';
+  });
+  if (!isOpen && target) {
+    target.style.display = 'block';
+    if (panel === 'msgs') renderAgentMessages(agentId);
+  }
+}
+
+async function renderAgentMessages(agentId) {
+  var el = $('agent-msgs-' + agentId);
+  if (!el) return;
+  var data;
+  try { data = await api('/api/agents/' + agentId + '/inbox?unread_only=false'); } catch(e) { data = { messages: [] }; }
+  var msgs = data.messages || [];
+  if (!msgs.length) {
+    el.innerHTML = '<div style="padding:12px;font-size:.75rem;color:var(--text-dim);background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px">No messages.</div>';
+    return;
+  }
+  el.innerHTML = '<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:8px;margin-bottom:8px;max-height:320px;overflow-y:auto">'
+    + '<div style="font-weight:600;font-size:.8rem;margin-bottom:8px;padding:4px">Messages (' + msgs.length + ')</div>'
+    + msgs.map(function(m) {
+      var typeColor = MSG_TYPE_COLORS[m.message_type] || 'var(--text-dim)';
+      var typeLabel = MSG_TYPE_LABELS[m.message_type] || m.message_type;
+      var ts = new Date(m.timestamp * 1000).toLocaleString();
+      var readStyle = m.read ? 'opacity:0.5' : 'font-weight:600';
+      return '<div style="padding:8px;border-bottom:1px solid var(--border);' + readStyle + '">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        + '<span style="font-size:.7rem;color:' + typeColor + ';font-weight:600">' + esc(typeLabel) + '</span>'
+        + '<span style="font-size:.65rem;color:var(--text-dim)">' + ts + '</span></div>'
+        + '<div style="font-size:.78rem;margin-bottom:4px">' + esc(m.content) + '</div>'
+        + '<div style="font-size:.65rem;color:var(--text-dim)">From: ' + esc(m.from_agent_id)
+        + (!m.read ? ' <button class="btn" style="font-size:.6rem;padding:1px 6px;margin-left:6px" onclick="markMsgRead(\'' + m.id + '\',\'' + agentId + '\')">Mark Read</button>' : '')
+        + '</div></div>';
+    }).join('')
+    + '</div>';
+}
+
+async function markMsgRead(msgId, agentId) {
+  try {
+    await fetch('/api/agents/' + agentId + '/inbox?mark_read=' + msgId);
+  } catch(e) {}
+  renderAgentMessages(agentId);
+}
+
+async function sendAgentMsg(fromId) {
+  var toId = ($('send-to-' + fromId) || {}).value;
+  var msgType = ($('send-type-' + fromId) || {}).value;
+  var content = (($('send-content-' + fromId) || {}).value || '').trim();
+  if (!toId) { toast('Select a recipient', 'err'); return; }
+  if (!content) { toast('Enter message content', 'err'); return; }
+  var res = await api('/api/agents/' + fromId + '/send', {
+    method: 'POST',
+    body: JSON.stringify({ to_agent_id: toId, type: msgType, content: content })
+  });
+  if (res && res.ok) {
+    toast('Message sent');
+    $('send-content-' + fromId).value = '';
+    loadAgents();
+  } else {
+    toast((res && res.error) || 'Failed to send', 'err');
+  }
+}
+
+async function broadcastAgentMsg(fromId) {
+  var msgType = ($('send-type-' + fromId) || {}).value;
+  var content = (($('send-content-' + fromId) || {}).value || '').trim();
+  if (!content) { toast('Enter message content', 'err'); return; }
+  var res = await api('/api/agents/broadcast', {
+    method: 'POST',
+    body: JSON.stringify({ from_agent_id: fromId, type: msgType, content: content })
+  });
+  if (res && res.ok) {
+    toast('Broadcast sent');
+    $('send-content-' + fromId).value = '';
+    loadAgents();
+  } else {
+    toast((res && res.error) || 'Broadcast failed', 'err');
+  }
+}
+
+async function shareEntity(fromId) {
+  var toId = ($('share-to-' + fromId) || {}).value;
+  var entityId = (($('share-entity-' + fromId) || {}).value || '').trim();
+  if (!toId) { toast('Select a recipient', 'err'); return; }
+  if (!entityId) { toast('Enter entity ID', 'err'); return; }
+  var res = await api('/api/agents/' + fromId + '/share-entity', {
+    method: 'POST',
+    body: JSON.stringify({ to_agent_id: toId, entity_id: entityId })
+  });
+  if (res && res.ok) {
+    toast('Entity shared');
+    $('share-entity-' + fromId).value = '';
+    loadAgents();
+  } else {
+    toast((res && res.error) || 'Share failed', 'err');
+  }
+}
+
+async function shareGoal(fromId) {
+  var toId = ($('share-to-' + fromId) || {}).value;
+  var goalId = (($('share-goal-' + fromId) || {}).value || '').trim();
+  if (!toId) { toast('Select a recipient', 'err'); return; }
+  if (!goalId) { toast('Enter goal ID', 'err'); return; }
+  var res = await api('/api/agents/' + fromId + '/share-goal', {
+    method: 'POST',
+    body: JSON.stringify({ to_agent_id: toId, goal_id: goalId })
+  });
+  if (res && res.ok) {
+    toast('Goal shared');
+    $('share-goal-' + fromId).value = '';
+    loadAgents();
+  } else {
+    toast((res && res.error) || 'Share failed', 'err');
+  }
+}
+
+async function createAgent() {
+  var name = ($('new-agent-name') || {}).value;
+  if (!name || !name.trim()) { toast('Agent name required', 'err'); return; }
+  var personality = ($('new-agent-personality') || {}).value;
+  var provider = ($('new-agent-provider') || {}).value;
+  var res = await api('/api/agents', {
+    method: 'POST',
+    body: JSON.stringify({ name: name.trim(), personality: personality, llm_provider: provider })
+  });
+  if (res && res.id) {
+    toast('Agent created: ' + name.trim());
+    $('new-agent-name').value = '';
+    $('agent-create-form').style.display = 'none';
+    loadAgents();
+  } else {
+    toast((res && res.error) || 'Failed to create agent', 'err');
+  }
+}
+
+async function agentDelete(id, name) {
+  if (!confirm('Delete agent "' + name + '"? This cannot be undone.')) return;
+  var res = await api('/api/agents/' + id, { method: 'DELETE' });
+  if (res && res.ok) {
+    toast('Agent deleted: ' + name);
+    loadAgents();
+  } else {
+    toast((res && res.error) || 'Delete failed', 'err');
+  }
+}
+
 /* ===== INIT ===== */
 renderImpulseButtons();
+applyLayoutVisibility();
 refreshDashboard();
 startDashboardRefresh();
 </script>

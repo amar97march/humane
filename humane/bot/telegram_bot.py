@@ -12,6 +12,7 @@ from humane.core.config import HumaneConfig, load_config
 from humane.bot.brain import Brain
 from humane.bot.conversation import ConversationEngine
 from humane.bot.scheduler import Scheduler
+from humane.bot.voice import VoiceProcessor
 
 logger = logging.getLogger("humane.telegram")
 
@@ -30,6 +31,7 @@ class HumaneBot:
         )
         self.brain = Brain(self.conductor, self.conversation)
         self.scheduler = Scheduler(self.brain)
+        self.voice = VoiceProcessor(self.config)
         self._app = None
 
     async def start(self):
@@ -51,6 +53,8 @@ class HumaneBot:
         self._app.add_handler(CommandHandler("help", self._handle_help))
         self._app.add_handler(CallbackQueryHandler(self._handle_callback))
         self._app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self._handle_message))
+        if self.config.voice_enabled:
+            self._app.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, self._handle_voice))
 
         # Set up scheduler to send messages via bot
         async def send_message(chat_id: int, text: str):
@@ -119,6 +123,58 @@ class HumaneBot:
 
         if response:
             await update.message.reply_text(response)
+
+    async def _handle_voice(self, update, context):
+        """Handle voice/audio messages — transcribe and route through brain."""
+        chat_id = update.effective_chat.id
+        user_id = update.effective_user.id
+        user_name = update.effective_user.first_name or update.effective_user.username or ""
+
+        try:
+            # Get the voice or audio file
+            if update.message.voice:
+                file = await update.message.voice.get_file()
+                audio_format = "ogg"
+            elif update.message.audio:
+                file = await update.message.audio.get_file()
+                # Detect format from mime_type or file name
+                mime = update.message.audio.mime_type or ""
+                if "mp3" in mime or "mpeg" in mime:
+                    audio_format = "mp3"
+                elif "wav" in mime:
+                    audio_format = "wav"
+                elif "m4a" in mime or "mp4" in mime:
+                    audio_format = "m4a"
+                elif "webm" in mime:
+                    audio_format = "webm"
+                else:
+                    audio_format = "ogg"
+            else:
+                await update.message.reply_text("I couldn't understand that audio.")
+                return
+
+            # Download the file bytes
+            audio_bytes = await file.download_as_bytearray()
+
+            # Transcribe
+            transcribed_text = await self.voice.transcribe(bytes(audio_bytes), format=audio_format)
+
+            if not transcribed_text:
+                await update.message.reply_text("I couldn't understand that audio.")
+                return
+
+            # Route through brain as if user typed the text
+            response = await self.brain.on_user_message(chat_id, user_id, user_name, transcribed_text)
+
+            prefix = f"I heard: '{transcribed_text}'\n\n"
+            if response:
+                await update.message.reply_text(prefix + response)
+            else:
+                await update.message.reply_text(prefix.strip())
+
+        except Exception as e:
+            logger.error("Voice processing error: %s", e, exc_info=True)
+            await update.message.reply_text("I couldn't understand that audio.")
 
     async def _handle_state(self, update, context):
         """Handle /state — show current HumanState."""

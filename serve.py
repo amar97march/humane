@@ -1,10 +1,11 @@
-"""Quick serve script for preview."""
+"""Quick serve script for preview — with multi-agent support."""
 import asyncio
 import logging
 from humane.conductor import Conductor
 from humane.core.config import HumaneConfig
 from humane.core.models import EntityType, MemoryType
 from humane.api.server import APIServer
+from humane.multi import AgentRegistry
 
 logging.basicConfig(level=logging.INFO)
 
@@ -23,11 +24,15 @@ conductor.goal_engine.register_goal("Close DesignStudio deal", expected_value=0.
 conductor.goal_engine.register_goal("Launch Q2 marketing campaign", expected_value=0.6, milestones_total=8)
 conductor.memory_decay.add_memory(MemoryType.EPISODIC, "Sent proposal to Arjun at DesignStudio, awaiting response")
 
-api = APIServer(conductor, config)
+# Initialize multi-agent registry
+registry = AgentRegistry()
+
+api = APIServer(conductor, config, registry=registry)
 
 async def main():
     runner = await api.start(8765)
-    print("Humane dashboard: http://localhost:8765")
+    agent_count = len(registry.list_agents())
+    print(f"Humane dashboard: http://localhost:8765 ({agent_count} extra agents loaded)")
     try:
         while True:
             await asyncio.sleep(1)

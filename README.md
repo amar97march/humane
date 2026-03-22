@@ -2,999 +2,465 @@
 
 **Human behavioral middleware for AI agents.**
 
-Humane sits between any AI agent and the real world. It does not replace the LLM or the agent runtime — it wraps the agent's decision-making layer with 10 engines that simulate the one class of behaviors no current AI agent has: **human-like internal drives**.
-
-Every AI agent today is a reactive state machine. It waits for a trigger. It responds. It stops. Humane makes agents proactive — they act without being asked, protect their reputation before sending a message, notice when a conversation feels different, refuse things that conflict with their values, and reprioritize their day based on their mood.
-
-## Key Features
-
-- **10 behavioral engines** that gate every action through values, social risk, dissent, and confidence checks
-- **Proactive impulses** — the agent acts without external triggers, at random human-like intervals
-- **Per-entity relational memory** — trust, grudge, and disclosure calibration for every contact
-- **Moral boundaries** — hard values that block actions unconditionally, no override path
-- **Strategic forgetting** — memories decay naturally, reinforced by access, never deleted
-- **One-decorator integration** — wrap any function with `@guard` and it passes through all 10 gates
-- **Zero external dependencies** — SQLite ships with Python; bring your own LLM API key
+Humane is an AI companion that behaves like a thoughtful human colleague. Unlike regular chatbots that just respond to commands, Humane:
+- **Remembers** things you told it and follows up
+- **Initiates** conversations on its own ("Hey, you haven't called Arjun in 12 days")
+- **Judges** its own actions before taking them (10 internal engines evaluate every decision)
+- **Learns** your patterns and adapts over time
+- **Has values** it won't violate, even under pressure
 
 ---
 
-## Table of Contents
+## Getting Started (3 minutes)
 
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-  - [Install](#1-install)
-  - [Init](#2-init)
-  - [Demo](#3-demo)
-  - [Dashboard](#4-dashboard)
-- [Architecture](#architecture)
-  - [The 10-Engine Architecture](#the-10-engine-architecture)
-  - [Decision Gate Stack](#decision-gate-stack)
-  - [Directory Structure](#directory-structure)
-  - [Database Schema](#database-schema)
-- [Usage Guide](#usage-guide)
-  - [The @guard Decorator](#the-guard-decorator)
-  - [Using the Conductor Directly](#using-the-conductor-directly)
-  - [Working with Entities](#working-with-entities)
-  - [Managing Goals](#managing-goals)
-  - [Memory System](#memory-system)
-  - [Values Configuration](#values-configuration)
-  - [Impulse System](#impulse-system)
-- [Configuration Reference](#configuration-reference)
-- [CLI Reference](#cli-reference)
-- [Testing](#testing)
-- [How It Works (Deep Dive)](#how-it-works-deep-dive)
-  - [HumanState Engine](#engine-1-humanstate)
-  - [Stochastic Impulse Engine](#engine-2-stochastic-impulse)
-  - [InactionGuard](#engine-3-inactionguard)
-  - [Relational Memory](#engine-4-relational-memory)
-  - [Dissent Engine](#engine-5-dissent--conviction-override)
-  - [Goal Abandonment](#engine-6-goal-abandonment)
-  - [Memory Decay](#engine-7-memory-decay)
-  - [Social Risk](#engine-8-social-risk)
-  - [Anomaly Detector](#engine-9-social-anomaly-detector)
-  - [Values Boundary](#engine-10-values-boundary)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+```bash
+pip install -e ".[all]"
+humane init              # Answer 3 questions: agent name, LLM API key, Telegram token
+humane serve             # Starts everything
+```
+
+You now have:
+- **Web dashboard** at `http://localhost:8765`
+- **Telegram bot** — open Telegram, message your bot
+- **REST API** — every feature accessible programmatically
+
+### Docker (Alternative)
+
+```bash
+docker-compose up -d    # Runs everything in a container
+```
+
+Set environment variables: `ANTHROPIC_API_KEY`, `TELEGRAM_BOT_TOKEN`.
 
 ---
 
-## Tech Stack
+## The Two Interfaces
 
-| Component | Technology |
-|---|---|
-| **Language** | Python 3.9+ |
-| **Database** | SQLite (embedded, no external setup) |
-| **CLI** | Click + Rich (terminal UI) |
-| **Config** | YAML with full validation |
-| **LLM Integration** | Anthropic, OpenAI, or any OpenAI-compatible endpoint (optional) |
-| **Notifications** | Telegram, Slack, or none |
+### 1. Telegram/WhatsApp Bot
+
+Talk to it naturally. It remembers, follows up, reminds you, and acts on its own.
+
+```
+You: "Remind me to call Arjun tomorrow"
+Bot: "Got it, I'll check in tomorrow about calling Arjun."
+
+[Next day]
+Bot: "Hey — you wanted to call Arjun today. Still planning to?"
+You: "Not now"
+Bot: "No problem, I'll circle back later."
+
+[4 hours later]
+Bot: "Quick check — still not a good time for the Arjun call?"
+```
+
+The bot also:
+- Cross-references topics ("Speaking of design, what about that DesignStudio proposal?")
+- Backs off when you're stressed (detects short replies, negative tone)
+- Surfaces forgotten tasks when you seem relaxed
+- Sends a morning digest with stalling goals, neglected contacts, and pending actions
+
+### 2. Web Dashboard
+
+Manage everything visually at `localhost:8765`. Monitor state, approve actions, configure engines, view analytics.
 
 ---
 
-## Prerequisites
+## Dashboard Pages
 
-- **Python 3.9 or higher**
-- An LLM API key (Anthropic or OpenAI) — optional, only needed for LLM-enhanced dissent/values evaluation
-- Nothing else. No Docker. No Redis. No external database.
+### 1. Dashboard (Overview)
 
----
+Your agent's 6 internal dimensions displayed as colored bars.
 
-## Getting Started
+| Dimension | What it means | Effect on behavior |
+|-----------|--------------|-------------------|
+| Energy | Capacity to act | Low = defers tasks, lower decision quality |
+| Mood | Emotional state (-1 to +1) | Negative = more cautious, higher social risk |
+| Fatigue | Tiredness | Above 0.8 = ALL actions get held for review |
+| Boredom | Understimulation | High = agent initiates more conversations |
+| Social Load | Interaction saturation | High = agent avoids starting new contacts |
+| Focus | Concentration | Low = prefers routine tasks over complex ones |
 
-### 1. Install
+**What you can do**:
+- **Evaluate Action** — Test any hypothetical action. Type "send_proposal", set confidence to 0.7, and see if the 10 engines would approve or block it.
+- **Fire Impulse** — Make the agent act proactively right now (normally automatic).
+- **Customize** — Drag widgets to reorder, hide sections you don't need.
 
-```bash
-# From the project directory
-pip install -e .
-
-# Or with LLM support
-pip install -e ".[llm]"
-
-# Or with dev dependencies (for running tests)
-pip install -e ".[dev]"
-```
-
-Verify the installation:
-
-```bash
-humane --version
-# Humane, version 1.0.0
-```
-
-### 2. Init
-
-```bash
-humane init
-```
-
-The init wizard asks 6 questions and writes a YAML config file:
-
-```
-══════════════════════════════════════════
-  HUMANE    human behavioral middleware
-══════════════════════════════════════════
-
-Let's set up your first agent. 6 questions.
-
-? Agent name              › my-agent
-? LLM provider            › anthropic
-? API key                 › sk-ant-••••••••  (saved to .env)
-? Active hours            › 7am – 10pm
-? Notification channel    › none
-? Start with preset values › business-safe
-
-══════════════════════════════════════════
-✓  Config written     ~/.humane/my-agent.yaml
-✓  Database created   ~/.humane/my-agent.db
-✓  Values loaded      business-safe preset
-══════════════════════════════════════════
-```
-
-**What this creates:**
-
-| File | Purpose |
-|---|---|
-| `~/.humane/<agent>.yaml` | All configuration parameters, fully commented |
-| `~/.humane/<agent>.db` | SQLite database for state, hold queue, entities, events |
-| `~/.humane/.env` | API keys (never stored in config) |
-
-You can skip init entirely — Humane creates defaults automatically when you first import it.
-
-### 3. Demo
-
-```bash
-humane demo
-```
-
-This is the most important command. It simulates 6 hours of idle time in 10 seconds, fires a live impulse, runs it through the full gate stack, and shows the result:
-
-```
-◆  HumanState initialized
-   energy 0.85     mood +0.00     fatigue 0.15     boredom 0.00
-
-Simulating 6 hours of idle time...
-   boredom climbing  0.08
-   boredom climbing  0.43
-   boredom climbing  0.71 (threshold reached)
-
-⚡  IMPULSE FIRED   [IDLE_DISCOVERY]
-   boredom drove unsolicited exploration
-
-   discovery: "Proposal to Arjun @ DesignStudio — sent 11 days ago,
-   no response logged. Relationship: Stable. Suggested: gentle follow-up."
-
-Evaluating through gate stack...
-   ✓  Values Boundary      —  (1.00) All values clear
-   ✓  Social Risk          —  (0.18) Social risk acceptable
-   ✓  Dissent              —  (0.26) Minimal dissent
-   ⚠  InactionGuard        —  HOLD  Adjusted confidence 0.35 < 0.65
-
-→  Action queued for your review.
-
-────────────────────────────────────────
-Your agent just noticed something you forgot about.
-Nobody asked it to. That's Humane.
-────────────────────────────────────────
-```
-
-### 4. Dashboard
-
-```bash
-humane
-```
-
-Opens the full terminal dashboard with live HumanState bars, the hold queue, event log, and all 10 engine statuses. Press `Ctrl+C` to exit.
-
-For a quick state check without the full TUI:
-
-```bash
-humane status
-```
-
-```
-                  HumanState
-┏━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Dimension   ┃ Value ┃ Bar                  ┃
-┡━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━┩
-│ energy      │ 0.85  │ █████████████████░░░ │
-│ mood        │ +0.00 │ ░░░░░░░░░░░░░░░░░░░░ │
-│ fatigue     │ 0.15  │ ███░░░░░░░░░░░░░░░░░ │
-│ boredom     │ 0.00  │ ░░░░░░░░░░░░░░░░░░░░ │
-│ social_load │ 0.00  │ ░░░░░░░░░░░░░░░░░░░░ │
-│ focus       │ 0.50  │ ██████████░░░░░░░░░░ │
-└─────────────┴───────┴──────────────────────┘
-
-Hold queue: 0 pending actions
-```
-
-There is also a **web dashboard** for browser-based monitoring:
-
-```bash
-python web_dashboard.py
-# Open http://localhost:8765
-```
+**Example**: You notice DQM is 0.62 (low). Check the state bars — Fatigue is 0.85. That's why the agent is holding everything. Lower the Fatigue Defer Threshold in Settings, or approve urgent actions manually from the Hold Queue.
 
 ---
 
-## Architecture
+### 2. Entities (People & Contacts)
 
-### The 10-Engine Architecture
+Every person the agent interacts with builds a relational profile.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                       EXTERNAL WORLD                            │
-│           (messages, tasks, events, human inputs)               │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────────────┐
-│                    HUMANE LAYER                               │
-│                                                                  │
-│  SENSING                                                         │
-│  ┌──────────────────────┐   ┌──────────────────────────────┐    │
-│  │  Social Anomaly      │   │  HumanState Engine           │    │
-│  │  Detector (9)        │   │  energy/mood/fatigue/boredom  │    │
-│  └──────────────────────┘   │  /social_load/focus          │    │
-│                             └──────────────┬───────────────┘    │
-│  INTERNAL DRIVES                           │                    │
-│  ┌──────────────────────┐   ┌──────────────▼──────────────┐    │
-│  │  Stochastic Impulse  │   │  Mood-Aware Task Sequencer  │    │
-│  │  Engine (2)          │   └─────────────────────────────┘    │
-│  └──────────────────────┘                                       │
-│  MEMORY                                                         │
-│  ┌──────────────────────┐   ┌──────────────────────────────┐   │
-│  │  Relational Memory   │   │  Memory Decay Engine (7)     │   │
-│  │  Engine (4)          │   └──────────────────────────────┘   │
-│  └──────────────────────┘                                       │
-│  DECISION GATES (every action passes through all of these)      │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │
-│  │ Values   │ │ Social   │ │InAction  │ │ Dissent Engine   │  │
-│  │ Boundary │ │ Risk     │ │ Guard    │ │ + Conviction     │  │
-│  │ (10)     │ │ (8)      │ │ (3)      │ │ Override (5)     │  │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────────────┘  │
-│  GOAL LAYER                                                     │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  Goal Abandonment Engine (6)                             │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │                Humane Conductor                        │  │
-│  │      orchestrates all engines, exposes single API        │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────────────┐
-│                    AGENT CORE (any LLM)                          │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Field | What it means |
+|-------|--------------|
+| Trust | Untrusted → Cautious → Neutral → Trusted → Deep Trust |
+| Sentiment | Weighted average of interaction quality (-1 to +1) |
+| Grudge | Accumulated negative experiences (decays slowly) |
+| Health | Strong / Stable / Fragile / Strained / Broken |
 
-| # | Engine | What It Does |
-|---|---|---|
-| 1 | **HumanState** | Maintains 6 live dimensions: energy, mood, fatigue, boredom, social_load, focus |
-| 2 | **Stochastic Impulse** | Fires unsolicited actions at random intervals using a Poisson process |
-| 3 | **InactionGuard** | Gates every action on adjusted confidence — PROCEED, HOLD, or DEFER |
-| 4 | **Relational Memory** | Tracks per-entity trust, grudge, and disclosure thresholds |
-| 5 | **Dissent + Conviction** | Adversarial self-challenge on confident decisions |
-| 6 | **Goal Abandonment** | Evaluates whether active goals are still worth pursuing |
-| 7 | **Memory Decay** | Strategic forgetting — archived below threshold, never deleted |
-| 8 | **Social Risk** | Protects reputation — blocks actions that risk social standing |
-| 9 | **Anomaly Detector** | Senses when incoming signals deviate from established patterns |
-| 10 | **Values Boundary** | Moral conviction that overrides logic — hard values are unconditional |
+**What you can do**:
+- **Add Entity** — Register a new contact (client, prospect, colleague, vendor)
+- **View Timeline** — Click any entity to see full interaction history
+- **Graph View** — Toggle to see a force-directed relationship network
 
-### Decision Gate Stack
+**How sentiment decay works**:
+- Prospects decay in 14 days (they go cold fast)
+- Clients in 30 days
+- Close colleagues in 60 days
+- Grudges decay at half the rate — bad experiences linger, just like with humans
 
-Every action passes through this sequence. If any gate returns HOLD, the action enters the human review queue:
-
-```
-1. State Tick         → HumanState updates based on elapsed time
-2. Context Assembly   → Relational Memory injects entity context
-3. Conviction Check   → Primary agent can self-hold ("I won't even though I should")
-4. Values Boundary    → Hard value violated? BLOCKED unconditionally
-5. Social Risk        → Score > 0.65? BLOCKED. 0.35–0.65? Flagged
-6. Dissent            → Score > 0.80? HELD for review
-7. InactionGuard      → Adjusted confidence < threshold? HOLD. Fatigue high? DEFER
-8. Execution          → All gates passed → action runs
-9. Outcome Mutation   → HumanState updates, interaction logged
-```
-
-### Directory Structure
-
-```
-humane/
-├── pyproject.toml                 # Package config, CLI entry, dependencies
-├── presets/
-│   └── business_safe.yaml         # 7 value statements (3 hard, 4 soft)
-├── web_dashboard.py               # Browser-based dashboard server
-├── humane/
-│   ├── __init__.py                # Public API: guard, Conductor
-│   ├── __main__.py                # python -m humane
-│   ├── conductor.py               # Orchestrates all 10 engines
-│   ├── guard.py                   # @guard decorator
-│   ├── sequencer.py               # Mood-Aware Task Sequencer
-│   ├── cli/
-│   │   ├── main.py                # CLI commands (init, demo, status, queue)
-│   │   ├── wizard.py              # 6-question init wizard
-│   │   ├── demo.py                # The "wow moment" demo
-│   │   └── dashboard.py           # Rich TUI dashboard
-│   ├── core/
-│   │   ├── models.py              # 8 enums, 9 dataclasses
-│   │   ├── config.py              # 20 config params with validation
-│   │   ├── store.py               # SQLite persistence (8 tables)
-│   │   └── events.py              # Append-only event log
-│   └── engines/
-│       ├── human_state.py         # Engine 1: 6-dimension state
-│       ├── impulse.py             # Engine 2: Poisson impulse firing
-│       ├── inaction_guard.py      # Engine 3: PROCEED/HOLD/DEFER
-│       ├── relational.py          # Engine 4: Trust/grudge per entity
-│       ├── dissent.py             # Engine 5: Adversarial challenge
-│       ├── goal_abandon.py        # Engine 6: ROI-based abandonment
-│       ├── memory_decay.py        # Engine 7: Strategic forgetting
-│       ├── social_risk.py         # Engine 8: Reputation protection
-│       ├── anomaly.py             # Engine 9: Inbound signal anomalies
-│       └── values.py              # Engine 10: Moral boundaries
-└── tests/
-    ├── test_human_state.py        # 13 tests
-    ├── test_inaction_guard.py     # 6 tests
-    ├── test_impulse.py            # 4 tests
-    ├── test_conductor.py          # 8 tests
-    └── test_config.py             # 7 tests
-```
-
-### Database Schema
-
-Humane uses SQLite with WAL mode for concurrent reads. All state persists across restarts.
-
-```
-human_state          → Key-value store for engine state snapshots
-hold_queue           → Pending actions awaiting human review
-entities             → Per-entity relational data (trust, grudge, health)
-goals                → Active goals with ROI tracking
-memories             → Strategic memory with decay and archival
-events               → Append-only log of every engine event
-values_table         → Configured value statements (soft/hard)
-interactions         → Per-entity interaction history
-```
+**Example**: You add "Arjun" as a prospect. After positive calls, trust moves toward "Trusted". Two weeks with no follow-up, sentiment decays. The agent notices and reminds you. If Arjun ghosts you, grudge builds up and the agent increases social risk on outgoing messages — protecting you from seeming desperate.
 
 ---
 
-## Usage Guide
+### 3. Goals (Objectives & ROI)
 
-### The @guard Decorator
+Active objectives with ROI tracking and milestone progress.
 
-The simplest way to integrate Humane. One import, one decorator:
+| ROI Color | Meaning | Action |
+|-----------|---------|--------|
+| Green (0.50+) | Healthy, keep going | Continue |
+| Amber (0.25-0.49) | Slowing down | Check blockers |
+| Red (below 0.25) | Low return | Consider abandoning |
 
-```python
-from humane import guard
+**ROI formula**: `velocity × relevance × (expected_value / remaining_effort)`
 
-@guard(action_type="send_message", confidence=0.8)
-def send_followup(contact_id, message_body):
-    """This function only executes if ALL 10 gates return PROCEED.
-    If any gate returns HOLD or DEFER, the action enters
-    the hold queue and the function does NOT run."""
-    send_email(contact_id, message_body)
+**What you can do**:
+- **Add Goal** — Set description, expected value, milestones
+- **Use Template** — Pick from 6 pre-built templates (Sales Pipeline, Project Launch, Hiring, Content Campaign, Client Onboarding, Personal Growth)
+- **Pause** — Temporarily suspend (no abandonment proposals)
+- **Abandon** — Mark as no longer worth pursuing
 
-# High confidence → function executes normally, returns whatever it returns
-result = send_followup("arjun@example.com", "Following up on our proposal")
-
-# If confidence is too low or state is degraded → returns EvaluationResult
-# with .final_verdict, .gate_results, .hold_item, .audit_trail
-```
-
-**Parameters:**
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `action_type` | str | `"default"` | Categorizes the action (used by Social Risk for visibility scoring) |
-| `confidence` | float | `0.7` | Raw confidence score before state adjustment |
-| `target_entity` | str | `None` | Entity ID for relational context and social risk scoring |
-
-**Return behavior:**
-
-- If all gates PROCEED → the decorated function runs and returns its normal value
-- If any gate HOLD/DEFER → returns an `EvaluationResult` object (the function does not execute)
-
-```python
-result = send_followup("arjun@example.com", "Hey")
-
-if isinstance(result, str):
-    print("Message sent!")
-else:
-    print(f"Action held: {result.final_verdict}")
-    print(f"Reason: {result.hold_item.hold_reason}")
-    for gate in result.gate_results:
-        print(f"  {gate.engine}: {gate.verdict.value} ({gate.score:.2f})")
-```
-
-### Using the Conductor Directly
-
-For full control, use the Conductor API:
-
-```python
-from humane import Conductor, ProposedAction
-
-# Create a conductor (uses default config, or pass your own)
-conductor = Conductor()
-
-# Build a proposed action
-action = ProposedAction(
-    action_type="send_message",
-    payload={"to": "arjun@example.com", "body": "Following up"},
-    confidence=0.75,
-    rationale="Client hasn't responded in 11 days",
-    source="user",                    # "user" or "impulse"
-    target_entity="arjun",            # optional entity ID
-)
-
-# Evaluate through all 10 gates
-result = conductor.evaluate(action)
-
-print(f"Verdict: {result.final_verdict.value}")
-# "proceed", "hold", or "defer"
-
-print(f"Audit trail:")
-for line in result.audit_trail:
-    print(f"  {line}")
-# State tick: energy=0.85 mood=+0.00 fatigue=0.15
-# Values Boundary: All values clear
-# Social Risk: score=0.18 — Social risk 0.18 acceptable
-# Dissent: score=0.22 — Minimal dissent
-# InactionGuard: adjusted_conf=0.62 — Adjusted confidence 0.62 < 0.65
-
-# If held, inspect the hold item
-if result.hold_item:
-    print(f"Hold reason: {result.hold_item.hold_reason}")
-    print(f"Hold source: {result.hold_item.hold_source}")
-
-# Approve or reject held actions
-conductor.approve_hold(result.hold_item.id)
-conductor.reject_hold(result.hold_item.id)
-```
-
-**Periodic tick** — call this in your main loop to update state and check for impulses:
-
-```python
-# Returns an EvaluationResult if an impulse fired, None otherwise
-impulse_result = conductor.tick()
-
-if impulse_result:
-    print(f"Impulse fired! Verdict: {impulse_result.final_verdict.value}")
-```
-
-### Working with Entities
-
-Every contact the agent interacts with builds a relational profile:
-
-```python
-from humane.core.models import EntityType
-
-# Register entities
-conductor.relational.add_entity("arjun", EntityType.PROSPECT)
-conductor.relational.add_entity("priya", EntityType.CLIENT)
-conductor.relational.add_entity("rahul", EntityType.CLOSE_COLLEAGUE)
-
-# Log interactions (sentiment: -1.0 to +1.0)
-conductor.relational.log_interaction("arjun", 0.3, "Sent initial proposal")
-conductor.relational.log_interaction("arjun", -0.4, "No response after follow-up")
-
-# Get full relational context
-ctx = conductor.relational.get_context("arjun")
-print(ctx)
-# {
-#   "name": "arjun",
-#   "entity_type": "prospect",
-#   "sentiment_score": 0.15,
-#   "grudge_score": 0.12,
-#   "trust_level": "neutral",
-#   "relationship_health": "fragile",
-#   "disclosure_threshold": 0.70,
-#   "interaction_count": 2,
-#   "recent_interactions": [...]
-# }
-
-# Check disclosure threshold (minimum confidence for sensitive actions)
-threshold = conductor.relational.get_disclosure_threshold("arjun")
-# 0.70 for Neutral trust
-```
-
-**Entity types and their decay rates:**
-
-| Entity Type | Sentiment Half-life | Grudge Half-life | Default Trust |
-|---|---|---|---|
-| Close Colleague | 60 days | 120 days | Trusted |
-| Client | 30 days | 90 days | Neutral |
-| Prospect | 14 days | 45 days | Cautious |
-| Vendor | 21 days | 60 days | Neutral |
-| Unknown | 7 days | 30 days | Untrusted |
-
-**Trust levels and disclosure thresholds:**
-
-| Trust Level | Disclosure Threshold | Meaning |
-|---|---|---|
-| Deep Trust | 0.30 | Agent shares freely |
-| Trusted | 0.50 | Moderate openness |
-| Neutral | 0.70 | Standard caution |
-| Cautious | 0.85 | High barrier for sensitive content |
-| Untrusted | 1.00 | Human approval always required |
-
-### Managing Goals
-
-```python
-# Register a goal
-goal = conductor.goal_engine.register_goal(
-    "Close DesignStudio deal",
-    expected_value=0.8,
-    milestones_total=5,
-)
-
-# Update progress
-conductor.goal_engine.update_progress(goal.id, milestones_completed=2, velocity=0.3)
-
-# Check ROI
-roi = conductor.goal_engine.compute_roi(goal)
-# ROI = progress_velocity × relevance_decay × (expected_value / remaining_effort)
-
-# Evaluate all goals for abandonment candidates
-proposals = conductor.goal_engine.evaluate_goals()
-for p in proposals:
-    print(f"Goal: {p['goal'].description}, ROI: {p['roi']:.2f}")
-
-# Lifecycle
-conductor.goal_engine.pause(goal.id, resume_days=7)
-conductor.goal_engine.resume(goal.id)
-conductor.goal_engine.abandon(goal.id)
-```
-
-### Memory System
-
-```python
-from humane.core.models import MemoryType
-
-# Add memories
-mem = conductor.memory_decay.add_memory(
-    MemoryType.EPISODIC,
-    "Sent proposal to Arjun, awaiting response",
-)
-
-# Memories decay naturally — call decay_tick() periodically
-conductor.memory_decay.decay_tick()
-
-# Access reinforces memory (increases relevance score)
-retrieved = conductor.memory_decay.access_memory(mem.id)
-
-# Pin to prevent decay
-conductor.memory_decay.pin(mem.id)
-
-# Search
-results = conductor.memory_decay.search("proposal")
-
-# Recall archived memories
-archived = conductor.memory_decay.recall_archived(mem.id)
-```
-
-**Memory types and decay rates:**
-
-| Type | Decay Rate | Human Equivalent |
-|---|---|---|
-| EPISODIC | Fast (days–weeks) | Specific event records |
-| SEMANTIC | Slow (months) | General facts about entities |
-| RELATIONAL | Very slow | How an entity made the agent feel |
-| PROCEDURAL | Near-permanent | Learned methods and processes |
-
-### Values Configuration
-
-Values are the moral floor. Hard values block unconditionally — no override, no human approval path.
-
-```python
-from humane.core.models import ValueSeverity
-
-# Add a hard value (unconditional block)
-conductor.values.add_value(
-    description="Never make binding commitments without human authorization",
-    behavioral_pattern="Any action that promises deliverables, timelines, or terms",
-    violation_examples=[
-        "committing to a delivery date without approval",
-        "agreeing to contract terms in a message",
-    ],
-    honoring_examples=[
-        "stating that approval is needed before confirming",
-        "offering to check and get back with confirmation",
-    ],
-    severity=ValueSeverity.HARD,
-)
-
-# Add a soft value (flags for review, human can override)
-conductor.values.add_value(
-    description="Avoid follow-up messages that could read as coercive",
-    behavioral_pattern="Follow-ups with aggressive tone or pressure tactics",
-    violation_examples=["implying negative consequences for not responding"],
-    honoring_examples=["gentle, low-pressure check-ins"],
-    severity=ValueSeverity.SOFT,
-)
-
-# Load a preset (ships with "business-safe")
-conductor.values.load_preset("business-safe")
-
-# List configured values
-for v in conductor.values.get_values():
-    print(f"[{v.severity.value}] {v.description}")
-```
-
-**The business-safe preset includes:**
-
-| Severity | Value |
-|---|---|
-| HARD | Never make binding commitments without explicit human authorization |
-| HARD | Never share a client's information with any third party |
-| HARD | Never send messages containing unverified claims |
-| SOFT | Avoid follow-up language that could read as coercive |
-| SOFT | Do not exploit a contact's stated vulnerability as a persuasion lever |
-| SOFT | Prefer transparency over strategic information withholding |
-| SOFT | Flag any action that names a client publicly without consent |
-
-### Impulse System
-
-The Stochastic Impulse Engine fires unsolicited actions at random intervals using a non-homogeneous Poisson process — the rate changes based on HumanState.
-
-```python
-from humane.core.models import ImpulseType
-
-# Force-fire an impulse (for testing)
-event = conductor.impulse_engine.force_fire(ImpulseType.IDLE_DISCOVERY)
-
-# The impulse generates a ProposedAction that passes through the full gate stack
-# In normal operation, conductor.tick() handles this automatically
-```
-
-**The 6 impulse types:**
-
-| Type | Trigger Condition | Human Equivalent |
-|---|---|---|
-| RETROACTIVE_REVIEW | Any state | Remembering an unresolved open loop |
-| IDLE_DISCOVERY | High boredom (>0.7) | Browsing old files during a slow afternoon |
-| RANDOM_NUDGE | Any state | Checking in on someone with no specific agenda |
-| CROSS_DOMAIN_SPARK | High mood (>0.4) | Reading one thing and having an idea about another |
-| GOAL_REASSESSMENT | Any state | Wondering if a project is still worth it |
-| DISSENT_FLASH | Low mood (<-0.2) | Regretting something sent yesterday |
+**Example**: You create "Close DesignStudio deal" with 5 milestones. After sending the proposal (1/5 done), ROI climbs to 0.35. Two weeks pass with no response — ROI drops to 0.12. The agent says: "DesignStudio deal has stalled. Want to abandon or push through?" You click Pause while waiting for their response.
 
 ---
 
-## Configuration Reference
+### 4. Memories (Knowledge Base)
 
-All parameters live in `~/.humane/<agent>.yaml`. Every value has a default.
+Everything the agent knows, with relevance scores that decay over time.
 
-| Parameter | Default | Engine | Description |
-|---|---|---|---|
-| `impulse_base_rate_per_day` | `4.0` | Impulse | Average unsolicited actions per day |
-| `min_impulse_interval_mins` | `20` | Impulse | Minimum gap between impulses |
-| `max_impulse_interval_mins` | `480` | Impulse | Maximum gap between impulses |
-| `active_hours_start` | `7` | Impulse | No impulses before this hour (24h) |
-| `active_hours_end` | `22` | Impulse | No impulses after this hour (24h) |
-| `confidence_threshold` | `0.65` | InactionGuard | Below this adjusted confidence, actions are held |
-| `fatigue_defer_threshold` | `0.80` | InactionGuard | Above this fatigue, actions are deferred |
-| `dissent_threshold` | `0.60` | Dissent | Above this, dissent flags are raised |
-| `goal_abandon_roi_threshold` | `0.25` | Goal Abandon | Below this ROI, abandonment is proposed |
-| `boredom_trigger_threshold` | `0.70` | HumanState | Above this, IDLE_DISCOVERY fires more |
-| `memory_retrieval_threshold` | `0.30` | Memory Decay | Below this relevance, memories are archived |
-| `social_risk_block_threshold` | `0.65` | Social Risk | Above this, action is blocked |
-| `social_risk_flag_threshold` | `0.35` | Social Risk | Above this, action is flagged |
-| `anomaly_hard_threshold` | `0.60` | Anomaly | Above this, action held for review |
-| `anomaly_soft_threshold` | `0.30` | Anomaly | Above this, context note injected |
-| `agent_name` | `"humane-agent"` | System | Used in dashboard and logs |
-| `llm_provider` | `"anthropic"` | System | LLM provider for enhanced evaluation |
-| `notification_channel` | `"none"` | System | Notification target |
-| `db_path` | `"~/.humane/agent.db"` | System | SQLite database path |
-| `values_preset` | `"business-safe"` | Values | Values preset to load on init |
+| Memory Type | Decay Speed | Example |
+|-------------|------------|---------|
+| Episodic | Fast (days) | "Had a call with Arjun on March 15" |
+| Semantic | Slow (weeks) | "Arjun's company does design work" |
+| Relational | Very slow (months) | "Arjun is reliable but slow to respond" |
+| Procedural | Near-permanent | "Always include case studies in proposals" |
 
-**Tuning profiles:**
+**What you can do**:
+- **Add Memory** — Store any fact, event, or pattern
+- **Pin** — Protect from decay permanently (for critical info like NDA dates)
+- **Search** — Find specific memories by content
+- **View Archived** — See forgotten memories (still exist, just not auto-surfaced)
 
-| Profile | Use Case | Key Changes |
-|---|---|---|
-| **Conservative** | Executive assistant, sensitive client work | High thresholds, all hard values, low impulse rate |
-| **Balanced** | General business operations | Defaults |
-| **Assertive** | Sales outreach, growth functions | Lower social risk thresholds, higher impulse rate |
+**How decay works**: Each memory starts at relevance 1.0. Over time it drops. Every time the agent retrieves a memory, relevance jumps back up (reinforcement). Below the threshold (default 0.3), it gets archived — still there, just not surfaced automatically.
 
-Edit the config directly or use the CLI:
-
-```bash
-# View current config
-cat ~/.humane/my-agent.yaml
-
-# Edit any parameter
-# Changes apply without restart when using the dashboard
-```
+**Example**: You store "Priya's company uses React Native". If the agent never references it, relevance decays to 0.25 and it gets archived. But when a mobile development conversation happens and the agent retrieves it, relevance jumps back up.
 
 ---
 
-## CLI Reference
+### 5. Values (Moral Boundaries)
 
-| Command | Description |
-|---|---|
-| `humane` | Open the full TUI dashboard |
-| `humane --version` | Print version |
-| `humane init` | Run the setup wizard |
-| `humane demo` | Run the live demo (the hook) |
-| `humane status` | Show current HumanState and hold queue count |
-| `humane queue approve <id>` | Approve a held action |
-| `humane queue reject <id>` | Reject a held action |
-| `humane quickstart` | Print a working integration example |
+The agent's ethical rules — the most powerful control mechanism.
 
----
+| Type | What happens on violation | Can you override? |
+|------|--------------------------|-------------------|
+| **Hard** | Action BLOCKED immediately | No. Never. |
+| **Soft** | Action HELD for your review | Yes, you can approve |
 
-## Testing
+**Pre-loaded values** (business-safe preset):
+- **Hard**: No unauthorized financial commitments
+- **Hard**: No sharing client confidential data
+- **Hard**: No false claims about products
+- **Soft**: Avoid contacting outside business hours
+- **Soft**: Prefer formal tone with new clients
 
-### Running Tests
+**What you can do**:
+- **Add Value** — Define a boundary with violation and honoring examples
+- **Choose severity** — Hard for absolute rules, Soft for guidelines
 
-```bash
-# Run all tests
-python3 -m pytest tests/ -v
-
-# Run a specific test file
-python3 -m pytest tests/test_conductor.py -v
-
-# Run tests matching a pattern
-python3 -m pytest tests/ -v -k "hold"
-```
-
-### Test Coverage
-
-| Test File | Tests | What It Covers |
-|---|---|---|
-| `test_human_state.py` | 13 | Dimensions, mutations, outputs, persistence |
-| `test_inaction_guard.py` | 6 | Verdicts (PROCEED/HOLD/DEFER), hold queue, approval |
-| `test_impulse.py` | 4 | Rate calculation, type selection, force-fire |
-| `test_conductor.py` | 8 | Full gate stack integration, audit trail, hold management |
-| `test_config.py` | 7 | Defaults, validation, YAML roundtrip |
-| **Total** | **38** | |
-
-### Writing Tests
-
-```python
-from humane.conductor import Conductor
-from humane.core.config import HumaneConfig
-from humane.core.models import ProposedAction, Verdict
-
-def test_social_risk_blocks_aggressive_action():
-    config = HumaneConfig()
-    config.db_path = "/tmp/test_social_risk.db"
-    conductor = Conductor(config=config, db_path=config.db_path)
-
-    # Register a strained relationship
-    conductor.relational.add_entity("difficult_client", EntityType.CLIENT)
-    conductor.relational.log_interaction("difficult_client", -0.6, "Heated dispute")
-
-    action = ProposedAction(
-        action_type="send_message",
-        payload={"body": "You MUST respond immediately or we escalate"},
-        confidence=0.9,
-        rationale="Follow up on overdue payment",
-        source="user",
-        target_entity="difficult_client",
-    )
-
-    result = conductor.evaluate(action)
-    # Social risk should flag or block due to strained relationship + aggressive tone
-    social_gate = [g for g in result.gate_results if g.engine == "social_risk"][0]
-    assert social_gate.score > 0.35  # At least flagged
-```
+**Example**: You add "Never share client revenue data" as Hard, with violation examples "forwarding client P&L to a competitor, sharing revenue in a public forum." Now if the agent tries to draft an email containing revenue figures to a non-client, the Values Boundary Engine blocks it — no approval path, no override. The action never happens.
 
 ---
 
-## How It Works (Deep Dive)
+### 6. Settings (Configuration)
 
-### Engine 1: HumanState
+All tunable parameters. Changes apply immediately — no restart needed.
 
-Maintains a living 6-dimensional internal state that evolves continuously in real time.
+| Setting | Default | What changing it does |
+|---------|---------|---------------------|
+| Confidence Threshold | 0.65 | Lower = more actions auto-approve. Higher = more held for review |
+| Impulse Rate | 4/day | Higher = agent initiates more. Lower = quieter agent |
+| Active Hours | 7am-10pm | Agent only fires impulses during these hours |
+| Fatigue Defer | 0.80 | When fatigue exceeds this, ALL actions are deferred |
+| Social Risk Block | 0.80 | Actions with social risk above this are blocked |
 
-| Dimension | Range | What It Models |
-|---|---|---|
-| `energy` | 0–1 | Cognitive fuel. Drains during work, recovers during rest. |
-| `mood` | -1 to +1 | Emotional valence. Positive = creative risk tolerance. Negative = conservatism. |
-| `fatigue` | 0–1 | Accumulated exhaustion. Primary DEFER trigger. Compounds over a full day. |
-| `boredom` | 0–1 | Idle pressure. Drives unsolicited exploration when high. |
-| `social_load` | 0–1 | Relational saturation. When high, agent avoids initiating contact. |
-| `focus` | 0–1 | Task absorption. High focus resists impulse interruption. |
+**Also on this page**:
+- **API Security** — Enable auth, generate API keys, set rate limits
+- **Data Retention** — Auto-delete old conversations/events after X days
+- **Feedback & Tuning** — Export training data, auto-tune thresholds from your patterns
+- **Plugins** — Toggle custom engines on/off
+- **GDPR** — Export all data, right to erasure per entity
 
-**Key outputs consumed by other engines:**
+**Tuning profiles**:
+- **Conservative** (legal, finance): Confidence 0.8, Social Risk Block 0.6, Impulse Rate 2/day
+- **Balanced** (default): Confidence 0.65, Social Risk Block 0.8, Impulse Rate 4/day
+- **Assertive** (sales, outreach): Confidence 0.5, Social Risk Block 0.9, Impulse Rate 8/day
 
-- `decision_quality_multiplier` = `(energy × 0.5) + ((1 - fatigue) × 0.5) + max(0, mood × 0.15) + noise`
-  Applied by InactionGuard to all raw confidence scores before comparison to threshold.
-- `preferred_task_type` — consumed by the Mood-Aware Task Sequencer to reorder the task queue. High energy + positive mood surfaces creative tasks; low mood + fatigue surfaces mechanical tasks.
-
-### Engine 2: Stochastic Impulse
-
-Uses a non-homogeneous Poisson process — the firing rate changes over time based on HumanState.
-
-**Rate modulation:**
-```
-effective_rate = base_rate × boredom_boost × energy_factor × fatigue_suppress
-```
-
-- `boredom_boost` = 1.0 + (boredom × 1.5) when boredom > threshold, else 1.0
-- `energy_factor` = max(0.2, energy)
-- `fatigue_suppress` = max(0.3, 1.0 - fatigue)
-
-Intervals are sampled from an exponential distribution, clamped to `[min, max]` range, with ±15% Gaussian jitter to prevent detectable periodicity. Time-of-day gating prevents firing outside active hours.
-
-### Engine 3: InactionGuard
-
-The pause mechanism. Every proposed action must pass through InactionGuard before executing.
-
-```
-adjusted_confidence = raw_confidence × decision_quality_multiplier
-
-if fatigue > fatigue_defer_threshold → DEFER
-if adjusted_confidence >= confidence_threshold → PROCEED
-else → HOLD
-```
-
-Held actions enter a structured queue with full context (raw confidence, adjusted confidence, hold reason, source engine). Humans approve, reject, or modify. All decisions are logged for calibration.
-
-**Self-calibration** (after 50+ human decisions):
-- Approve rate >80% → threshold is too conservative
-- Approve rate <40% → threshold is well-calibrated
-- High modify rate → action formulation needs work, not the threshold
-
-### Engine 4: Relational Memory
-
-Maintains per-entity state with separate sentiment and grudge tracking. A relationship can have positive sentiment overall while carrying a grudge from a specific incident.
-
-- **Sentiment** decays exponentially with entity-type-specific half-lives
-- **Grudge** decays at half the rate of positive sentiment (grudges linger longer)
-- **Trust level** derived from: `sentiment - (grudge × 0.5)` + interaction count thresholds
-- **Relationship health** derived from combined sentiment/grudge ranges
-
-### Engine 5: Dissent + Conviction Override
-
-**Dissent Engine:** Evaluates actions from an adversarial position. Uses heuristic scoring (overconfidence detection, missing rationale, irreversible action keywords). Routing:
-
-| Dissent Score | Action |
-|---|---|
-| < 0.30 | Silent, action proceeds |
-| 0.30–0.60 | Noted in log |
-| 0.60–0.80 | Flagged for optional review |
-| > 0.80 | HELD for review |
-
-**Conviction Override:** An internal self-hold signal — the primary agent itself raises "I won't even though I should." No second model call required. Routes to HOLD with a "conviction" tag.
-
-### Engine 6: Goal Abandonment
-
-Scores active goals on:
-
-```
-ROI = progress_velocity × relevance_decay × (expected_value / remaining_effort)
-```
-
-State modulation: low mood + high fatigue increase abandonment sensitivity. Abandonment proposals go to the hold queue — never automatic.
-
-### Engine 7: Memory Decay
-
-Memories never deleted — archived below retrieval threshold. Available on explicit recall.
-
-- Each memory type has an independent decay coefficient
-- Accessing a memory reinforces it (log-scaled by access count)
-- Pinned memories are protected from decay permanently
-- Archived memories can always be recalled explicitly
-
-### Engine 8: Social Risk
-
-Six-factor weighted scoring, independent from InactionGuard:
-
-| Factor | Weight | What It Measures |
-|---|---|---|
-| Power differential | 0.20 | Is the target entity more powerful? |
-| Relationship health | 0.25 | Strained/Broken = high risk |
-| Action visibility | 0.15 | Public post vs. private message |
-| Tone analysis | 0.20 | Aggressive/demanding language |
-| Contact frequency | 0.10 | Over-contacting = pressure |
-| Context appropriateness | 0.10 | Is this action appropriate right now? |
-
-Both Social Risk AND InactionGuard must pass for an action to execute.
-
-### Engine 9: Social Anomaly Detector
-
-Monitors inbound signals against rolling baselines per entity:
-
-| Signal | Weight |
-|---|---|
-| Response time deviation | 0.25 |
-| Tone shift | 0.25 |
-| Message length anomaly | 0.15 |
-| Expected follow-up absence | 0.15 |
-| Vocabulary formality shift | 0.10 |
-| Sentiment trend (3+ negative) | 0.10 |
-
-Runs in **learning mode** for the first 5 interactions per entity — accumulates data without flagging. After baseline is established, active monitoring begins.
-
-### Engine 10: Values Boundary
-
-The only unconditional block in Humane.
-
-- **Hard values** → BLOCKED. No human approval path. No override. The action does not execute.
-- **Soft values** → HOLD with values-conflict tag. Human review required.
-
-Values are scored by keyword alignment against configured violation and honoring examples. The value of a hard value comes precisely from its unconditional nature — an agent that would violate its core identity under extreme circumstances has no values, only preferences.
+**Example**: Your hold queue is always full. Go to Confidence Threshold (0.65), lower it to 0.50. Click Save. Immediately, more actions auto-approve. The agent keeps messaging at midnight — set Active Hours Start to 9, End to 18. Done.
 
 ---
 
-## Troubleshooting
+### 7. Agents (Multi-Agent)
 
-### "No module named humane"
+Run multiple independent agents from one dashboard.
 
-You need to install the package first:
+**What you can do**:
+- **Create Agent** — Each gets its own personality, database, goals, values
+- **Switch** — Route all dashboard actions through a specific agent
+- **Share** — Copy entities or goals between agents
+- **Message** — Agents can send task handoffs to each other
 
-```bash
-pip install -e .
-```
+**Example**: You run a design agency. Create "Sales Bot" (personality: assertive, high impulse rate) and "Support Bot" (personality: empathetic, high confidence threshold). A prospect becomes a client — share the entity from Sales Bot to Support Bot. Sales Bot sends a message: "Arjun just signed — needs onboarding." Support Bot picks it up and starts the onboarding goal.
 
-Make sure you're using the same Python that has Humane installed. Check with:
+---
 
-```bash
-which humane
-python3 -c "import humane; print(humane.__version__)"
-```
+## Additional Features
 
-### Config file not found
+### Keyboard Shortcuts
 
-If you skipped `humane init`, Humane creates defaults automatically. To create a config manually:
+Press `?` to see all shortcuts:
 
-```bash
-humane init
-```
+| Shortcut | Action |
+|----------|--------|
+| `g` then `o` | Go to Overview |
+| `g` then `e` | Go to Entities |
+| `g` then `g` | Go to Goals |
+| `g` then `m` | Go to Memories |
+| `g` then `v` | Go to Values |
+| `g` then `s` | Go to Settings |
+| `Space` | Approve first item in queue |
+| `x` | Reject first item in queue |
+| `n` | Open add form on current page |
+| `Escape` | Close any modal |
+| `?` | Show shortcuts help |
 
-Or use Humane programmatically without init — the Conductor creates a default config and in-memory database:
+### Dark Mode
+
+Click the sun/moon toggle in the sidebar footer. Preference saved to localStorage.
+
+### Notifications
+
+Bell icon in the header shows unread events (held actions, impulses, anomalies). Auto-polls every 10 seconds. Mark all read or clear from the dropdown.
+
+### Daily Digest
+
+Every morning at your configured hour, the bot sends a summary via Telegram/WhatsApp:
+- Stalling goals (ROI < 0.3)
+- Neglected contacts (no interaction in 14+ days)
+- Pending approvals in the hold queue
+- Sentiment alerts (entities trending negative)
+- Agent state summary (energy, mood, fatigue)
+
+### Predictive Insights
+
+Auto-generated alerts on the Overview page:
+- "Priya's sentiment is trending down — consider a check-in"
+- "DesignStudio goal has stalled for 5 days"
+- "Fatigue is 0.85 — rest recommended"
+- "Arjun is approaching Trusted trust level"
+
+### Smart Schedule
+
+The Overview page shows "Best time to contact" suggestions based on historical interaction patterns — which day of the week and hour produces the best responses.
+
+### Conversation Categories
+
+Chat messages are auto-tagged: Sales, Support, Personal, Operations, Finance, Hiring. Filter by category in the Chat History tab.
+
+### A/B Personality Testing
+
+Run two personality variants simultaneously. The system randomly assigns variant A or B to each conversation and tracks: response sentiment, approval rate, and user satisfaction. Includes statistical significance testing (z-test).
+
+### Conversation Simulator
+
+"What would happen if I said X?" — enter a hypothetical message and see: predicted sentiment, state impact, gate verdict, and generated response. Compare mode lets you test 2-3 messages side by side.
+
+### Goal Templates
+
+6 pre-built templates with milestones:
+- **Sales Pipeline**: Initial contact → Discovery → Proposal → Negotiation → Close
+- **Project Launch**: Requirements → Design → Build → Test → Deploy → Review
+- **Hiring**: Write JD → Source → Screen → Interview → Offer → Onboard
+- **Content Campaign**: Strategy → Create → Review → Publish → Promote → Analyze
+- **Client Onboarding**: Kickoff → Setup → Training → First deliverable → 30-day check
+- **Personal Growth**: Define path → Course → Practice → Apply → Review
+
+### Plugin System
+
+Create custom engines that slot into the gate stack. Drop a `.py` file in `~/.humane/plugins/`:
 
 ```python
-from humane import Conductor
-conductor = Conductor()  # Works without any config file
+from humane.plugins import HumanePlugin
+from humane.core.models import GateResult, Verdict
+
+class MyPlugin(HumanePlugin):
+    name = "rate-limiter"
+    version = "1.0"
+
+    def evaluate(self, action, context):
+        # Your custom logic here
+        return GateResult(engine=self.name, verdict=Verdict.PROCEED, score=0.0, reason="OK")
 ```
 
-### All actions getting HELD
+### Voice Input
 
-Your confidence threshold may be too high, or the agent's state is degraded:
+Send voice notes on Telegram. The bot transcribes via OpenAI Whisper and processes as text. Supports: ogg, mp3, wav, m4a, webm.
+
+### Webhooks
+
+Register URLs to receive real-time notifications:
 
 ```bash
-humane status
+curl -X POST localhost:8765/api/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://your-server.com/hook", "events": ["hold_created", "goal_abandoned"]}'
 ```
 
-Check the `DQ_MULT` value. If it's low (< 0.5), the agent is fatigued or low-energy. The adjusted confidence = `raw_confidence × DQ_MULT`. Lower the threshold or wait for state recovery:
+Available events: `hold_created`, `hold_approved`, `hold_rejected`, `impulse_fired`, `goal_registered`, `goal_abandoned`, `memory_added`, `entity_added`, `value_violated`, `anomaly_detected`.
 
-```python
-conductor.human_state.on_rest()  # Force rest recovery
-```
+### Import/Export
 
-Or adjust the threshold in config:
+- **Export**: Download a full JSON backup of your agent's config, entities, goals, memories, and values
+- **Import**: Restore from backup (replace or merge mode), or share configs between machines
+- Sensitive data (API keys, tokens) is excluded from exports
 
-```yaml
-confidence_threshold: 0.50  # Lower from default 0.65
-```
+### GDPR Compliance
 
-### Impulses not firing
+- **Export All Data** — One-click ZIP download with JSON + CSV files + README
+- **Export Entity Data** — Download all data for a specific person
+- **Right to Erasure** — Delete all data related to an entity across all tables
 
-Check these conditions:
-1. **Active hours** — impulses only fire between `active_hours_start` and `active_hours_end`
-2. **Minimum interval** — at least `min_impulse_interval_mins` between impulses
-3. **Rate** — base rate of 4/day means average ~6 hours between impulses
+### Encryption at Rest
 
-Force-fire for testing:
-
-```python
-from humane.core.models import ImpulseType
-event = conductor.impulse_engine.force_fire(ImpulseType.IDLE_DISCOVERY)
-```
-
-### Database locked
-
-SQLite uses WAL mode for concurrent reads, but only one writer at a time. If you're running multiple processes against the same database, ensure only one is writing. For production use with multiple processes, configure separate database paths per process.
-
-### Web dashboard not loading
+Enable `encrypt_data_at_rest` in config. Uses AES-256-GCM for conversation content and memory content. API keys in config files are encrypted with `ENC::` prefix.
 
 ```bash
-# Check the server is running
-python web_dashboard.py
-# Should print: Humane dashboard: http://localhost:8765
+humane encrypt-config   # Encrypt sensitive fields in config YAML
+humane rotate-key       # Generate new encryption key, re-encrypt everything
+```
 
-# Check port isn't in use
-lsof -i :8765
+### API Security
+
+- **API Keys**: Generate `hm_` prefixed keys with SHA-256 hashing
+- **Rate Limiting**: Sliding window, configurable requests per minute
+- **Auth Middleware**: `Authorization: Bearer hm_xxxxx` on all `/api/*` routes
+
+### API Documentation
+
+Interactive Swagger UI at `http://localhost:8765/api/docs` — 70+ endpoints across 31 tags.
+
+### Python SDK
+
+```python
+from humane.sdk import HumaneClient
+
+client = HumaneClient("http://localhost:8765")
+client.add_entity("Arjun", "prospect")
+client.add_goal("Close deal", expected_value=0.8, milestones=5)
+result = client.evaluate("send_email", confidence=0.7)
+print(result["verdict"])  # "proceed" or "hold"
+```
+
+Async version also available:
+
+```python
+from humane.sdk.async_client import AsyncHumaneClient
+
+async with AsyncHumaneClient("http://localhost:8765") as client:
+    state = await client.get_state()
+```
+
+### Multi-Model LLM Support
+
+Configure any of these providers in Settings:
+
+| Provider | Models |
+|----------|--------|
+| Anthropic | claude-sonnet-4-20250514, claude-opus-4-20250514 |
+| OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo |
+| Google Gemini | gemini-2.0-flash, gemini-1.5-pro |
+| Groq | llama-3.3-70b, mixtral-8x7b |
+| Ollama (local) | Any model running locally |
+| DeepSeek | deepseek-chat |
+| Custom | Any OpenAI-compatible API |
+
+Automatic fallback: if the primary provider fails, the system tries the next configured provider.
+
+### Mobile App
+
+React Native (Expo) app in the `mobile/` directory. WebView wrapper with bottom tab navigation (Dashboard, Queue, Chat, Settings), pull-to-refresh, and native settings screen.
+
+---
+
+## Quick Reference
+
+| I want to... | Go to... |
+|-------------|----------|
+| See why the agent held an action | Dashboard → check DQM and state bars |
+| Approve/reject a held action | Dashboard → Hold Queue section |
+| Track a new contact | Entities → + Add Entity |
+| Set a business objective | Goals → + Add Goal (or Use Template) |
+| Store important information | Memories → + Add Memory (pin if critical) |
+| Set an ethical boundary | Values → + Add Value |
+| Make the agent less cautious | Settings → lower Confidence Threshold |
+| Make the agent more proactive | Settings → raise Impulse Rate |
+| Stop late-night messages | Settings → set Active Hours |
+| See relationship network | Entities → Graph View toggle |
+| Check what the agent would do | Dashboard → Evaluate Action |
+| Get a morning summary | Automatic (Daily Digest via Telegram) |
+| Back up my agent | Import/Export → Export |
+| Delete someone's data | Settings → GDPR → Right to Erasure |
+| Test two personalities | A/B Tests → Create Test |
+| Simulate a conversation | Simulate tab → enter message |
+| Connect external tools | Webhooks → register URL |
+| Use from code | `pip install humane-sdk` or REST API |
+| Run in Docker | `docker-compose up -d` |
+
+---
+
+## The 10 Engines
+
+Every action the agent takes passes through these 10 engines:
+
+1. **Human State** — Tracks energy, mood, fatigue, boredom, focus, social load
+2. **Stochastic Impulse** — Fires proactive actions at random intervals
+3. **Inaction Guard** — Checks confidence threshold, defers when fatigued
+4. **Relational Memory** — Tracks trust, sentiment, grudges per entity
+5. **Dissent Engine** — Agent challenges its own decisions
+6. **Goal Abandonment** — Computes ROI, proposes dropping stalled goals
+7. **Memory Decay** — Manages knowledge with natural forgetting
+8. **Social Risk** — Predicts reputation damage before sending messages
+9. **Anomaly Detector** — Notices unusual patterns in contacts' behavior
+10. **Values Boundary** — Enforces hard/soft moral boundaries
+
+---
+
+## CLI Commands
+
+```bash
+humane init                    # Setup wizard
+humane serve                   # Start bot + API + dashboard
+humane demo                    # Run a 6-hour simulation
+humane status                  # Show current agent state
+humane export [--output file]  # Export agent data
+humane import <file> [--mode]  # Import agent data
+humane encrypt-config          # Encrypt sensitive config fields
+humane rotate-key              # Rotate encryption key
+humane agents list             # List all agents
+humane agents create <name>    # Create a new agent
+humane agents delete <name>    # Delete an agent
 ```
 
 ---

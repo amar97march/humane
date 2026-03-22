@@ -109,7 +109,7 @@ def run_wizard():
         f.write(f"{key_var}={api_key}\n")
 
     from humane.core.store import Store
-    store = Store(config.db_path)
+    store = Store(config.db_path, encrypt_at_rest=config.encrypt_data_at_rest)
     store.initialize()
 
     if values_preset == "business-safe":

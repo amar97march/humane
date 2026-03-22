@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  humane:
+    build: .
+    ports:
+      - "8765:8765"
+    volumes:
+      - humane-data:/data
+    environment:
+      - HUMANE_AGENT_NAME=my-agent
+      - HUMANE_LLM_PROVIDER=anthropic
+      - HUMANE_LLM_API_KEY=${ANTHROPIC_API_KEY}
+      - HUMANE_TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    restart: unless-stopped
+volumes:
+  humane-data:

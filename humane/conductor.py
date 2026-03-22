@@ -21,6 +21,7 @@ from humane.engines.memory_decay import MemoryDecayEngine
 from humane.engines.social_risk import SocialRiskEngine
 from humane.engines.anomaly import SocialAnomalyDetector
 from humane.engines.values import ValuesBoundaryEngine
+from humane.plugins import PluginManager
 from humane.sequencer import MoodAwareTaskSequencer
 
 
@@ -29,7 +30,7 @@ class Conductor:
     def __init__(self, config: Optional[HumaneConfig] = None, db_path: Optional[str] = None):
         self.config = config or HumaneConfig()
         _db = db_path or self.config.db_path
-        self.store = Store(_db)
+        self.store = Store(_db, encrypt_at_rest=self.config.encrypt_data_at_rest)
         self.store.initialize()
         self.event_log = EventLog(self.store)
 
@@ -45,6 +46,10 @@ class Conductor:
         self.anomaly_detector = SocialAnomalyDetector(self.config, self.relational, self.store, self.event_log)
         self.values = ValuesBoundaryEngine(self.config, self.store, self.event_log)
         self.sequencer = MoodAwareTaskSequencer(self.human_state)
+
+        self.plugin_manager = PluginManager()
+        self.plugin_manager.set_conductor(self)
+        self.plugin_manager.discover_and_load_all()
 
     def evaluate(self, action: ProposedAction) -> EvaluationResult:
         """Run action through the full 10-step decision gate stack.
@@ -131,6 +136,26 @@ class Conductor:
                 gate_results=gate_results, hold_item=hold, audit_trail=audit,
             )
 
+        # --- Plugin gates ---
+        plugin_context = {
+            "energy": self.human_state.energy,
+            "mood": self.human_state.mood,
+            "fatigue": self.human_state.fatigue,
+        }
+        for plugin in self.plugin_manager.get_active_plugins():
+            try:
+                plugin_result = plugin.evaluate(action, plugin_context)
+                gate_results.append(plugin_result)
+                audit.append(f"Plugin[{plugin.name}]: score={plugin_result.score:.2f} — {plugin_result.reason}")
+                if plugin_result.verdict == Verdict.HOLD:
+                    hold = self._create_hold(action, plugin_result, f"plugin:{plugin.name}")
+                    return EvaluationResult(
+                        action=action, final_verdict=Verdict.HOLD,
+                        gate_results=gate_results, hold_item=hold, audit_trail=audit,
+                    )
+            except Exception as exc:
+                audit.append(f"Plugin[{plugin.name}] ERROR: {exc}")
+
         audit.append("ALL GATES PASSED — action PROCEED")
         self.event_log.log("action_proceed", "conductor", {
             "action_type": action.action_type,
@@ -182,9 +207,11 @@ class Conductor:
 
     def approve_hold(self, hold_id: str):
         self.inaction_guard.approve(hold_id)
+        self.store.resolve_hold_item(hold_id, "approved")
 
     def reject_hold(self, hold_id: str):
         self.inaction_guard.reject(hold_id)
+        self.store.resolve_hold_item(hold_id, "rejected")
 
     def get_hold_queue(self) -> list[HoldItem]:
         return self.store.get_hold_queue()

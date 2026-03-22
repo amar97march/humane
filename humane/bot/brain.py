@@ -10,6 +10,8 @@ from humane.core.models import (
     EntityType, ImpulseEvent, MemoryType, ProposedAction, Verdict,
 )
 from humane.bot.conversation import ConversationEngine, ConversationContext
+from humane.categorizer import ConversationCategorizer
+from humane.ab_testing import ABTestManager
 
 
 class Brain:
@@ -18,6 +20,8 @@ class Brain:
     def __init__(self, conductor: Conductor, conversation: ConversationEngine):
         self.conductor = conductor
         self.conversation = conversation
+        self.categorizer = ConversationCategorizer()
+        self.ab_manager = ABTestManager(conductor.store)
         self._chat_entity_map: Dict[int, str] = {}  # chat_id -> entity_id
         self._conversation_history: Dict[int, List[Dict[str, str]]] = {}  # chat_id -> messages
         self._deferred: Dict[str, Dict[str, Any]] = {}  # memory_id -> deferral info
@@ -65,15 +69,16 @@ class Brain:
         # 4. Store as episodic memory
         self.conductor.memory_decay.add_memory(MemoryType.EPISODIC, f"User said: {text[:300]}")
 
-        # 5. Store in conversation table
-        self.conductor.store.add_conversation(str(uuid4()), chat_id, user_id, "user", text, sentiment)
+        # 5. Store in conversation table with auto-category
+        category = self.categorizer.categorize(text)
+        self.conductor.store.add_conversation(str(uuid4()), chat_id, user_id, "user", text, sentiment, category)
 
         # 6. Check for deferral responses ("not now", "later", "busy")
         defer_response = self._check_deferral(chat_id, text)
         if defer_response:
             self._add_to_history(chat_id, "user", text)
             self._add_to_history(chat_id, "assistant", defer_response)
-            self.conductor.store.add_conversation(str(uuid4()), chat_id, 0, "bot", defer_response, 0.0)
+            self.conductor.store.add_conversation(str(uuid4()), chat_id, 0, "bot", defer_response, 0.0, category)
             return defer_response
 
         # 7. Find related context (memories, goals, cross-topic links)
@@ -92,6 +97,10 @@ class Brain:
             for g in self.conductor.goal_engine.active_goals()
         ]
 
+        # 8a. Check for active A/B test and override personality
+        ab_info = self.ab_manager.get_active_test_for_chat(chat_id)
+        ab_personality = ab_info["personality"] if ab_info else None
+
         ctx = ConversationContext(
             user_message=text,
             human_state=state,
@@ -105,6 +114,10 @@ class Brain:
             ],
             cross_topic_links=related.get("links", []),
         )
+
+        # If A/B test is active, inject the variant personality as a custom prompt
+        if ab_personality:
+            ctx.personality = ab_personality
 
         # 9. Generate response via LLM
         response = await self.conversation.generate_response(ctx)
@@ -123,10 +136,22 @@ class Brain:
         if result.final_verdict == Verdict.PROCEED:
             self._add_to_history(chat_id, "user", text)
             self._add_to_history(chat_id, "assistant", response)
-            self.conductor.store.add_conversation(str(uuid4()), chat_id, 0, "bot", response, 0.0)
+            response_category = self.categorizer.categorize(response)
+            self.conductor.store.add_conversation(str(uuid4()), chat_id, 0, "bot", response, 0.0, response_category)
+
+            # Record A/B test metrics
+            if ab_info:
+                self.ab_manager.record_result(ab_info["test_id"], chat_id, "response_sentiment", sentiment)
+                self.ab_manager.record_result(ab_info["test_id"], chat_id, "approval_rate", 1.0)
+
             return response
 
         # If held, send a softer acknowledgment instead
+        # Record A/B test metrics for held responses (approval_rate = 0)
+        if ab_info:
+            self.ab_manager.record_result(ab_info["test_id"], chat_id, "response_sentiment", sentiment)
+            self.ab_manager.record_result(ab_info["test_id"], chat_id, "approval_rate", 0.0)
+
         ack = "Got it, let me think about that."
         self._add_to_history(chat_id, "user", text)
         self._add_to_history(chat_id, "assistant", ack)
@@ -173,7 +198,8 @@ class Brain:
             if result.final_verdict == Verdict.PROCEED:
                 messages.append((chat_id, text))
                 self._add_to_history(chat_id, "assistant", text)
-                self.conductor.store.add_conversation(str(uuid4()), chat_id, 0, "bot", text, 0.0)
+                impulse_category = self.categorizer.categorize(text)
+                self.conductor.store.add_conversation(str(uuid4()), chat_id, 0, "bot", text, 0.0, impulse_category)
 
         return messages
 

@@ -20,6 +20,8 @@ anthropic = ["anthropic>=0.20"]
 openai = ["openai>=1.0"]
 gemini = ["google-genai>=1.0"]
 bot = ["python-telegram-bot>=21.0"]
+sdk = ["requests>=2.28"]
+security = ["cryptography>=41.0"]
 dev = ["pytest>=7.0", "pytest-asyncio>=0.21", "aiohttp>=3.9"]
 all = [
     "python-telegram-bot>=21.0",

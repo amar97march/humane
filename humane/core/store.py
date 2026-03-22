@@ -24,11 +24,40 @@ from humane.core.models import (
 
 
 class Store:
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str, encrypt_at_rest: bool = False):
         expanded = os.path.expanduser(db_path)
         os.makedirs(os.path.dirname(expanded), exist_ok=True)
         self.db_path = expanded
         self._conn: Optional[sqlite3.Connection] = None
+        self._encrypt_at_rest = encrypt_at_rest
+        self._encryptor = None  # lazy-loaded
+
+    # ------------------------------------------------------------------
+    # Encryption helpers (for conversations.content & memories.content)
+    # ------------------------------------------------------------------
+
+    def _get_encryptor(self):
+        """Lazily load the EncryptionManager when needed."""
+        if self._encryptor is None:
+            from humane.encryption import get_encryption_manager
+            self._encryptor = get_encryption_manager()
+        return self._encryptor
+
+    def _enc(self, plaintext: str) -> str:
+        """Encrypt *plaintext* if at-rest encryption is enabled."""
+        if not self._encrypt_at_rest or not plaintext:
+            return plaintext
+        return self._get_encryptor().encrypt(plaintext)
+
+    def _dec(self, ciphertext: str) -> str:
+        """Decrypt *ciphertext* if at-rest encryption is enabled."""
+        if not self._encrypt_at_rest or not ciphertext:
+            return ciphertext
+        try:
+            return self._get_encryptor().decrypt(ciphertext)
+        except Exception:
+            # Data may predate encryption -- return as-is.
+            return ciphertext
 
     @property
     def conn(self) -> sqlite3.Connection:
@@ -139,6 +168,7 @@ class Store:
                     role TEXT NOT NULL,
                     content TEXT NOT NULL,
                     sentiment REAL NOT NULL DEFAULT 0.0,
+                    category TEXT DEFAULT NULL,
                     created_at REAL NOT NULL
                 );
 
@@ -160,7 +190,80 @@ class Store:
 
                 CREATE INDEX IF NOT EXISTS idx_reminders_chat_id
                     ON reminders(chat_id, completed);
+
+                CREATE TABLE IF NOT EXISTS webhooks (
+                    id TEXT PRIMARY KEY,
+                    url TEXT NOT NULL,
+                    events TEXT NOT NULL,
+                    secret TEXT,
+                    active INTEGER NOT NULL DEFAULT 1,
+                    created_at REAL NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS api_keys (
+                    id TEXT PRIMARY KEY,
+                    key_hash TEXT NOT NULL UNIQUE,
+                    key_preview TEXT NOT NULL,
+                    created_at REAL NOT NULL,
+                    last_used REAL,
+                    request_count INTEGER NOT NULL DEFAULT 0
+                );
+
+                CREATE TABLE IF NOT EXISTS ab_tests (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    personality_a TEXT NOT NULL,
+                    personality_b TEXT NOT NULL,
+                    start_time REAL NOT NULL,
+                    end_time REAL,
+                    status TEXT NOT NULL DEFAULT 'active',
+                    winner TEXT
+                );
+
+                CREATE TABLE IF NOT EXISTS ab_results (
+                    id TEXT PRIMARY KEY,
+                    test_id TEXT NOT NULL,
+                    chat_id INTEGER NOT NULL,
+                    variant TEXT NOT NULL,
+                    metric TEXT NOT NULL,
+                    value REAL NOT NULL,
+                    created_at REAL NOT NULL,
+                    FOREIGN KEY (test_id) REFERENCES ab_tests(id)
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_ab_results_test
+                    ON ab_results(test_id, variant);
+
+                CREATE TABLE IF NOT EXISTS ab_assignments (
+                    test_id TEXT NOT NULL,
+                    chat_id INTEGER NOT NULL,
+                    variant TEXT NOT NULL,
+                    assigned_at REAL NOT NULL,
+                    PRIMARY KEY (test_id, chat_id),
+                    FOREIGN KEY (test_id) REFERENCES ab_tests(id)
+                );
+
+                CREATE TABLE IF NOT EXISTS agent_messages (
+                    id TEXT PRIMARY KEY,
+                    from_agent_id TEXT NOT NULL,
+                    to_agent_id TEXT NOT NULL,
+                    message_type TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    timestamp REAL NOT NULL,
+                    metadata_json TEXT NOT NULL DEFAULT '{}',
+                    read INTEGER NOT NULL DEFAULT 0
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_agent_messages_to
+                    ON agent_messages(to_agent_id, read, timestamp DESC);
             """)
+
+        # Migration: add category column to conversations if it doesn't exist
+        try:
+            self.conn.execute("SELECT category FROM conversations LIMIT 1")
+        except sqlite3.OperationalError:
+            self.conn.execute("ALTER TABLE conversations ADD COLUMN category TEXT DEFAULT NULL")
+            self.conn.commit()
 
     # --- human_state ---
 
@@ -422,7 +525,7 @@ class Store:
                 (
                     memory.id,
                     memory.memory_type.value,
-                    memory.content,
+                    self._enc(memory.content),
                     memory.relevance_score,
                     memory.access_count,
                     int(memory.pinned),
@@ -447,7 +550,7 @@ class Store:
                    WHERE id=?""",
                 (
                     memory.memory_type.value,
-                    memory.content,
+                    self._enc(memory.content),
                     memory.relevance_score,
                     memory.access_count,
                     int(memory.pinned),
@@ -481,7 +584,7 @@ class Store:
         return Memory(
             id=row["id"],
             memory_type=MemoryType(row["memory_type"]),
-            content=row["content"],
+            content=self._dec(row["content"]),
             relevance_score=row["relevance_score"],
             access_count=row["access_count"],
             pinned=bool(row["pinned"]),
@@ -615,6 +718,87 @@ class Store:
             for row in rows
         ]
 
+    # --- entity timeline ---
+
+    def get_entity_timeline(self, entity_id: str, limit: int = 100) -> List[Dict]:
+        """Return a chronological list of all events related to an entity,
+        pulling from interactions, memories, hold_queue, and events tables."""
+        timeline: List[Dict] = []
+
+        # Interactions for this entity
+        interaction_rows = self.conn.execute(
+            "SELECT * FROM interactions WHERE entity_id = ? ORDER BY created_at DESC LIMIT ?",
+            (entity_id, limit),
+        ).fetchall()
+        for row in interaction_rows:
+            timeline.append({
+                "type": "interaction",
+                "timestamp": row["created_at"],
+                "sentiment": row["sentiment"],
+                "summary": row["content_summary"],
+            })
+
+        # Memories mentioning the entity (search content for entity_id or entity name)
+        entity = self.get_entity(entity_id)
+        entity_name = entity.name if entity else None
+        if entity_name:
+            like_pattern = f"%{entity_name}%"
+            memory_rows = self.conn.execute(
+                "SELECT * FROM memories WHERE content LIKE ? ORDER BY created_at DESC LIMIT ?",
+                (like_pattern, limit),
+            ).fetchall()
+        else:
+            memory_rows = []
+        for row in memory_rows:
+            timeline.append({
+                "type": "memory",
+                "timestamp": row["created_at"],
+                "content": row["content"],
+                "memory_type": row["memory_type"],
+            })
+
+        # Hold queue items targeting this entity
+        hold_rows = self.conn.execute(
+            "SELECT * FROM hold_queue ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        for row in hold_rows:
+            action_data = json.loads(row["action_json"])
+            target = action_data.get("target_entity")
+            if target == entity_id or (entity_name and target == entity_name):
+                timeline.append({
+                    "type": "hold",
+                    "timestamp": row["created_at"],
+                    "action_type": action_data.get("action_type", ""),
+                    "verdict": row["resolution"] if row["resolved"] else row["verdict"],
+                })
+
+        # Events referencing this entity in data_json
+        like_pattern_id = f"%{entity_id}%"
+        event_rows = self.conn.execute(
+            "SELECT * FROM events WHERE data_json LIKE ? ORDER BY created_at DESC LIMIT ?",
+            (like_pattern_id, limit),
+        ).fetchall()
+        if entity_name:
+            like_pattern_name = f"%{entity_name}%"
+            name_event_rows = self.conn.execute(
+                "SELECT * FROM events WHERE data_json LIKE ? AND id NOT IN "
+                "(SELECT id FROM events WHERE data_json LIKE ?) ORDER BY created_at DESC LIMIT ?",
+                (like_pattern_name, like_pattern_id, limit),
+            ).fetchall()
+            event_rows = list(event_rows) + list(name_event_rows)
+        for row in event_rows:
+            timeline.append({
+                "type": "event",
+                "timestamp": row["created_at"],
+                "engine": row["engine"],
+                "event_type": row["event_type"],
+            })
+
+        # Sort chronologically (oldest first) and apply limit
+        timeline.sort(key=lambda x: x["timestamp"])
+        return timeline[:limit]
+
     # --- conversations ---
 
     def add_conversation(
@@ -625,12 +809,13 @@ class Store:
         role: str,
         content: str,
         sentiment: float = 0.0,
+        category: Optional[str] = None,
     ) -> None:
         with self.conn:
             self.conn.execute(
-                """INSERT INTO conversations (id, chat_id, user_id, role, content, sentiment, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (conversation_id, chat_id, user_id, role, content, sentiment, time.time()),
+                """INSERT INTO conversations (id, chat_id, user_id, role, content, sentiment, category, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (conversation_id, chat_id, user_id, role, self._enc(content), sentiment, category, time.time()),
             )
 
     def get_conversations(
@@ -648,8 +833,9 @@ class Store:
                 "chat_id": row["chat_id"],
                 "user_id": row["user_id"],
                 "role": row["role"],
-                "content": row["content"],
+                "content": self._dec(row["content"]),
                 "sentiment": row["sentiment"],
+                "category": row["category"],
                 "created_at": row["created_at"],
             }
             for row in rows
@@ -718,3 +904,39 @@ class Store:
                 "UPDATE reminders SET completed = 1 WHERE id = ?",
                 (reminder_id,),
             )
+
+    # --- webhooks ---
+
+    def add_webhook(
+        self,
+        webhook_id: str,
+        url: str,
+        events: List[str],
+        secret: Optional[str] = None,
+    ) -> None:
+        with self.conn:
+            self.conn.execute(
+                """INSERT INTO webhooks (id, url, events, secret, active, created_at)
+                   VALUES (?, ?, ?, ?, 1, ?)""",
+                (webhook_id, url, json.dumps(events), secret, time.time()),
+            )
+
+    def remove_webhook(self, webhook_id: str) -> None:
+        with self.conn:
+            self.conn.execute("DELETE FROM webhooks WHERE id = ?", (webhook_id,))
+
+    def list_webhooks(self) -> List[Dict]:
+        rows = self.conn.execute(
+            "SELECT * FROM webhooks ORDER BY created_at DESC"
+        ).fetchall()
+        return [
+            {
+                "id": row["id"],
+                "url": row["url"],
+                "events": json.loads(row["events"]),
+                "secret": row["secret"],
+                "active": bool(row["active"]),
+                "created_at": row["created_at"],
+            }
+            for row in rows
+        ]
